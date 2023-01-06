@@ -1,14 +1,7 @@
-# seawolf
+/*
+ *
+ */
 
-Playground with graphics, with the use of [OpenGL](https://www.khronos.org/opengl) and [GLFW](https://www.glfw.org/)
-
-### Getting Started
-
-For more info see [getting started](examples/README.md).
-
-### Examples
-
-``` c
 #include "seawolf.h"
 
 int main( void )
@@ -46,5 +39,3 @@ int main( void )
 
    return 0;
 }
-```
-![Logo C](examples/main/main.png)

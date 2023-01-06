@@ -1,0 +1,8 @@
+# SeaWolf
+*.bak
+*.exe
+*.hbc
+*.hbm
+*.hbp
+*.hbmk
+tmp
