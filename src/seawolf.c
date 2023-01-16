@@ -143,6 +143,7 @@ void begin_drawing( pSeaWolf w )
    glDisable( GL_CULL_FACE );
    glDisable( GL_DEPTH_TEST );
    glDisable( GL_BLEND );
+   glDepthMask( GL_TRUE );
 
    glMatrixMode( GL_PROJECTION );
    glLoadIdentity();
@@ -160,7 +161,7 @@ void end_drawing( pSeaWolf w )
    glfwSwapBuffers( w->window );
 }
 
-int opengl_functions( pSeaWolf w, iOpenGl type, int par1, int par2, int par3, int par4, int par5 )
+int opengl_functions( pSeaWolf w, iShape type, int par1, int par2, int par3, int par4, int par5, int par6, int par7 )
 {
    int ret = 1;
 
@@ -179,7 +180,7 @@ int opengl_functions( pSeaWolf w, iOpenGl type, int par1, int par2, int par3, in
       glEnd();
       break;
 
-   case OPENGL_POINT_SIZE:
+   case OPENGL_POINTSIZE:
 
       hex_to_Color3f( par4 );
       glPointSize( par3 );
@@ -197,6 +198,17 @@ int opengl_functions( pSeaWolf w, iOpenGl type, int par1, int par2, int par3, in
       glEnd();
       break;
 
+   case OPENGL_RECT:
+
+      hex_to_Color3f( par5 );
+      glBegin( GL_LINE_LOOP );
+      glVertex2f( par1, par2 );
+      glVertex2f( par3, par2 );
+      glVertex2f( par3, par4 );
+      glVertex2f( par1, par4 );
+      glEnd();
+      break;
+
    case OPENGL_FILLRECT:
 
       hex_to_Color3f( par5 );
@@ -208,8 +220,81 @@ int opengl_functions( pSeaWolf w, iOpenGl type, int par1, int par2, int par3, in
       glEnd();
       break;
 
+   case OPENGL_TRIANGLE:
+
+      hex_to_Color3f( par7 );
+      glBegin( GL_LINE_LOOP );
+      glVertex2f( par1, par2 );
+      glVertex2f( par3, par4 );
+      glVertex2f( par5, par6 );
+      glEnd();
+      break;
+
+   case OPENGL_FILLTRIANGLE:
+
+      hex_to_Color3f( par7 );
+      glBegin( GL_TRIANGLES );
+      glVertex2f( par1, par2 );
+      glVertex2f( par3, par4 );
+      glVertex2f( par5, par6 );
+      glEnd();
+      break;
+
+   case OPENGL_CIRCLE:
+
+      hex_to_Color3f( par4 );
+      glBegin( GL_LINE_LOOP );
+         for( int i = 0; i < 360; i++ )
+         {
+            float angle = i * M_PI / 180.0;
+            glVertex2f( par1 + cos( angle ) * par3, par2 + sin( angle ) * par3 );
+         }
+      glEnd();
+      break;
+
+   case OPENGL_FILLCIRCLE:
+
+      hex_to_Color3f( par4 );
+      glBegin( GL_POLYGON );
+         for( int i = 0; i < 360; i++ )
+          {
+            float angle = i * M_PI / 180.0;
+            glVertex2f( par1 + cos( angle ) * par3, par2 + sin( angle ) * par3 );
+         }
+      glEnd();
+      break;
+
+   case OPENGL_ELLIPSE:
+
+      hex_to_Color3f( par5 );
+      float x, y;
+      for( float angle = 0; angle <= 360; angle += 0.1 )
+      {
+         x = par1 + par3 * cos( angle );
+         y = par2 + par4 * sin( angle );
+         glBegin( GL_POINTS );
+            glVertex2f( x, y );
+         glEnd();
+      }
+      break;
+
+   case OPENGL_FILLELLIPSE:
+
+      hex_to_Color3f( par5 );
+      glBegin( GL_TRIANGLE_FAN );
+      glVertex2f( par1, par2 ); // center point
+      for( float angle = 0; angle <= 360; angle += 1 )
+      {
+         float x = par1 + par3 * cos( angle );
+         float y = par2 + par4 * sin( angle );
+         glVertex3f( x, y, 0.0f );
+      }
+      glEnd();
+      break;
+
    default:
-      return 0;
+
+     return 0;
    }
    return ret;
 }

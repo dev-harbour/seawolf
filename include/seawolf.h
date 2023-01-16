@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -146,14 +147,21 @@
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 // types
-typedef enum iOpenGl
+typedef enum iShape
 {
    OPENGL_BACKGROUND,
    OPENGL_POINT,
-   OPENGL_POINT_SIZE,
+   OPENGL_POINTSIZE,
    OPENGL_LINES,
+   OPENGL_RECT,
    OPENGL_FILLRECT,
-} iOpenGl;
+   OPENGL_TRIANGLE,
+   OPENGL_FILLTRIANGLE,
+   OPENGL_CIRCLE,
+   OPENGL_FILLCIRCLE,
+   OPENGL_ELLIPSE,
+   OPENGL_FILLELLIPSE,
+} iShape;
 
 typedef enum iText
 {
@@ -233,11 +241,18 @@ int glfw_functions();
 #define sw_Begin( w ) do { begin_drawing( w )
 #define sw_End( w ) end_drawing( w ); } while( 0 )
 //---
-#define sw_Background( w, hexColor )               opengl_functions( w, OPENGL_BACKGROUND, hexColor )
-#define sw_Point( w, x, y, hexColor )              opengl_functions( w, OPENGL_POINT, x, y, hexColor )
-#define sw_PointSize( w, x, y, size, hexColor )    opengl_functions( w, OPENGL_POINT_SIZE, x, y, size, hexColor )
-#define sw_Lines( w, x1, y1, x2, y2, hexColor )    opengl_functions( w, OPENGL_LINES, x1, y1, x2, y2, hexColor )
-#define sw_FillRect( w, x1, y1, x2, y2, hexColor ) opengl_functions( w, OPENGL_FILLRECT, x1, y1, x2, y2, hexColor )
+#define sw_Background( w, hexColor )                            opengl_functions( w, OPENGL_BACKGROUND, hexColor )
+#define sw_Point( w, x, y, hexColor )                           opengl_functions( w, OPENGL_POINT, x, y, hexColor )
+#define sw_PointSize( w, x, y, size, hexColor )                 opengl_functions( w, OPENGL_POINTSIZE, x, y, size, hexColor )
+#define sw_Lines( w, x1, y1, x2, y2, hexColor )                 opengl_functions( w, OPENGL_LINES, x1, y1, x2, y2, hexColor )
+#define sw_Rect( w, x1, y1, x2, y2, hexColor )                  opengl_functions( w, OPENGL_RECT, x1, y1, x2, y2, hexColor )
+#define sw_FillRect( w, x1, y1, x2, y2, hexColor )              opengl_functions( w, OPENGL_FILLRECT, x1, y1, x2, y2, hexColor )
+#define sw_Triangle( w, x1, y1, x2, y2, x3, y3, hexColor )      opengl_functions( w, OPENGL_TRIANGLE, x1, y1, x2, y2, x3, y3, hexColor )
+#define sw_FillTriangle( w, x1, y1, x2, y2, x3, y3, hexColor )  opengl_functions( w, OPENGL_FILLTRIANGLE, x1, y1, x2, y2, x3, y3, hexColor )
+#define sw_Circle( w, x, y, radius, hexColor )                  opengl_functions( w, OPENGL_CIRCLE, x, y, radius, hexColor )
+#define sw_FillCircle( w, x, y, radius, hexColor )              opengl_functions( w, OPENGL_FILLCIRCLE, x, y, radius, hexColor )
+#define sw_Ellipse( w, x, y, radius, rotation, hexColor )       opengl_functions( w, OPENGL_ELLIPSE, x, y, radius, rotation, hexColor )
+#define sw_FillEllipse( w, x, y, radius, rotation, hexColor )   opengl_functions( w, OPENGL_FILLELLIPSE, x, y, radius, rotation, hexColor )
 //---
 #define sw_OpenFont( w, fileName )                  text_functions( w, TEXT_FONT, fileName )
 #define sw_DispOutAt( w, text, col, row, hexColor ) text_functions( w, TEXT_DISPOUTAT, text, col, row, hexColor )
