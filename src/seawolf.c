@@ -145,10 +145,11 @@ void begin_drawing( pSeaWolf w )
    glDisable( GL_BLEND );
    glDepthMask( GL_TRUE );
 
-   glMatrixMode( GL_PROJECTION );
+   // set up orthographic projection
+   glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
-   glOrtho( 0, w->width, w->height, 0, -1, 1 );
-   glMatrixMode( GL_MODELVIEW );
+   glOrtho(0, w->width, 0, w->height, -1, 1);
+   glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
 
    glEnable( GL_TEXTURE_2D );
@@ -386,3 +387,10 @@ int glfw_functions( pSeaWolf w, iGlfw type, int par1 )
    return ret;
 }
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+double sw_GetTime( void )
+{
+   struct timeval tv;
+   gettimeofday( &tv, NULL );
+   return ( double ) tv.tv_sec + ( double ) tv.tv_usec / 1000000;
+}

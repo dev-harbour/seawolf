@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
@@ -267,5 +268,6 @@ int glfw_functions();
 #define sw_PollEvents( w )                 glfw_functions( w, GLFW_POLLEVENTS )
 #define sw_WaitEvents( w )                 glfw_functions( w, GLFW_WAITEVENTS )
 #define sw_WaitEventsTimeout( w, timeout ) glfw_functions( w, GLFW_WAITEVENTSTIMEOUT, timeout )
-
+//---
+double sw_GetTime( void );
 #endif /* End SEAWOLF_H_ */

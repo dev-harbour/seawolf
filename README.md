@@ -47,4 +47,4 @@ int main( void )
    return 0;
 }
 ```
-![Logo C](examples/main/main.png)
+![Main](examples/main/main.png)
