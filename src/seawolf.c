@@ -58,6 +58,16 @@ static void window_size_callback( GLFWwindow *window, int width, int height )
    s_w->height = height;
 }
 
+static void hex_to_ClearColor( uint32_t hexColor )
+{
+   double r, g, b;
+   r = ( ( hexColor >> 16 ) & 0xFF ) / 255.0;
+   g = ( ( hexColor >> 8  ) & 0xFF ) / 255.0;
+   b = (   hexColor         & 0xFF ) / 255.0;
+
+   glClearColor( r, g, b, 1.0 );
+}
+
 static void hex_to_Color3f( uint32_t hexColor )
 {
    float r, g, b;
@@ -138,7 +148,7 @@ void begin_drawing()
    glfwGetFramebufferSize( w->window, &w->width, &w->height );
 
    glViewport( 0, 0, w->width, w->height );
-   hex_to_Color3f( w->background );
+   hex_to_ClearColor( w->background );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
    glDisable( GL_CULL_FACE );
    glDisable( GL_DEPTH_TEST );
@@ -147,7 +157,7 @@ void begin_drawing()
    glMatrixMode( GL_PROJECTION );
    glLoadIdentity();
    glOrtho( 0, w->width, w->height, 0, -1, 1 );
-   glMatrixMode(GL_MODELVIEW);
+   glMatrixMode( GL_MODELVIEW );
    glLoadIdentity();
 
    glEnable( GL_TEXTURE_2D );
@@ -231,7 +241,6 @@ int opengl_functions( iShape type, void *args )
       glEnd();
       }
       break;
-
 
    // sw_Triangle( x1, y1, x2, y2, x3, y3, hc )
    case OPENGL_TRIANGLE:
@@ -352,66 +361,69 @@ int text_functions( iText type, void *args )
    return ret;
 }
 
-int glfw_functions( iGlfw type, int par1 )
+int glfw_functions( iGlfw type, void *args )
 {
    int ret = 1;
 
    switch( type )
    {
-   case GLFW_GET_KEY:
+      // sw_GetKey( key )
+      case GLFW_GET_KEY:
 
-      ret = ( w->keyKey == par1 ) == GLFW_PRESS ? T : F;
-      break;
+         int *get_key = ( int *)args;
 
-   case GLFW_GET_MOUSEBUTTON:
+         ret = ( w->keyKey == *get_key ) == GLFW_PRESS ? T : F;
+         break;
 
-      ret = ( w->mouseButton == par1 ) == GLFW_PRESS ? T : F;
-      break;
+      // sw_GetMouseButton( button )
+      case GLFW_GET_MOUSEBUTTON:
 
-   case GLFW_WIN_WIDTH:
+         int *get_mousebutton = ( int *)args;
 
-      ret = w->width;
-      break;
+         ret = ( w->mouseButton == *get_mousebutton ) == GLFW_PRESS ? T : F;
+         break;
 
-   case GLFW_WIN_HEIGHT:
+      // sw_WinWidth()
+      case GLFW_WIN_WIDTH:
 
-      ret = w->height;
-      break;
+         ret = w->width;
+         break;
 
-   case GLFW_WIN_MAXCOL:
+      // sw_WinHeight()
+      case GLFW_WIN_HEIGHT:
 
-      ret = w->width / 9;
-      break;
+         ret = w->height;
+         break;
 
-   case GLFW_WIN_MAXROW:
+      // sw_WinMaximized()
+      case GLFW_WIN_MAXIMIZED:
 
-      ret = w->height / 18;
-      break;
+         glfwMaximizeWindow( w->window );
+         ret = w->winMaximized;
+         break;
 
-   case GLFW_WIN_MAXIMIZED:
+      // sw_PollEvents()
+      case GLFW_POLLEVENTS:
 
-      glfwMaximizeWindow( w->window );
-      ret = w->winMaximized;
-      break;
+         glfwPollEvents();
+         break;
 
-   case GLFW_POLLEVENTS:
+      // sw_WaitEvents()
+      case GLFW_WAITEVENTS:
 
-      glfwPollEvents();
-      break;
+         glfwWaitEvents();
+         break;
 
-   case GLFW_WAITEVENTS:
+      // sw_WaitEventsTimeout( timeout )
+      case GLFW_WAITEVENTSTIMEOUT:
 
-      glfwWaitEvents();
-      break;
+         double *events_timeout = ( double *)args;
 
-   case GLFW_WAITEVENTSTIMEOUT:
+         glfwWaitEventsTimeout( *events_timeout );
+         break;
 
-      glfwWaitEventsTimeout( ( double ) par1 );
-      break;
-
-   default:
-
-      return 0;
+      default:
+         return 0;
    }
    return ret;
 }

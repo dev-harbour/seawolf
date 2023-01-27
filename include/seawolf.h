@@ -175,8 +175,6 @@ typedef enum iGlfw
    GLFW_GET_MOUSEBUTTON,
    GLFW_WIN_WIDTH,
    GLFW_WIN_HEIGHT,
-   GLFW_WIN_MAXCOL,
-   GLFW_WIN_MAXROW,
    GLFW_WIN_MAXIMIZED,
    GLFW_POLLEVENTS,
    GLFW_WAITEVENTS,
@@ -322,7 +320,7 @@ void begin_drawing();
 void end_drawing();
 int opengl_functions( iShape type, void *args );
 int text_functions( iText type, void *args );
-int glfw_functions();
+int glfw_functions( iGlfw type, void *args );
 //---
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 // macros
@@ -407,16 +405,31 @@ do { \
 } while( 0 )
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
-#define sw_GetKey( key )                glfw_functions( GLFW_GET_KEY, key )
-#define sw_GetMouseButton( button )     glfw_functions( GLFW_GET_MOUSEBUTTON, button )
-#define sw_WinWidth()                   glfw_functions( GLFW_WIN_WIDTH )
-#define sw_WinHeight()                  glfw_functions( GLFW_WIN_HEIGHT )
-#define sw_WinMaxCol()                  glfw_functions( GLFW_WIN_MAXCOL )
-#define sw_WinMaxRow()                  glfw_functions( GLFW_WIN_MAXROW )
-#define sw_WinMaximized()               glfw_functions( GLFW_WIN_MAXIMIZED )
-#define sw_PollEvents()                 glfw_functions( GLFW_POLLEVENTS )
-#define sw_WaitEvents()                 glfw_functions( GLFW_WAITEVENTS )
-#define sw_WaitEventsTimeout( timeout ) glfw_functions( GLFW_WAITEVENTSTIMEOUT, timeout )
+//--- GLFW
+#define sw_GetKey( key ) \
+({ \
+   int get_key = key; \
+   glfw_functions( GLFW_GET_KEY, &get_key ); \
+})
+
+#define sw_GetMouseButton( button ) \
+({ \
+   int get_mousebutton = button; \
+   glfw_functions( GLFW_GET_MOUSEBUTTON, &get_mousebutton ); \
+})
+
+#define sw_WinWidth()     glfw_functions( GLFW_WIN_WIDTH )
+#define sw_WinHeight()    glfw_functions( GLFW_WIN_HEIGHT )
+#define sw_WinMaximized() glfw_functions( GLFW_WIN_MAXIMIZED )
+#define sw_PollEvents()   glfw_functions( GLFW_POLLEVENTS )
+#define sw_WaitEvents()   glfw_functions( GLFW_WAITEVENTS )
+
+#define sw_WaitEventsTimeout( timeout ) \
+({ \
+   double events_timeout = timeout; \
+   glfw_functions( GLFW_WAITEVENTSTIMEOUT, &events_timeout ); \
+})
+
 //---
 double sw_GetTime( void );
 #endif /* End SEAWOLF_H_ */

@@ -24,7 +24,7 @@ int main( void )
          {
             x = ( float )rand() / RAND_MAX * sw_WinWidth();
             y = ( float )rand() / RAND_MAX * sw_WinHeight();
-            size = (float)rand() / RAND_MAX * 10 + 1;
+            size = ( float )rand() / RAND_MAX * 10 + 1;
             hc = rand() % 0xffffff;
 
             // Animate the movement of points towards the center of the screen
