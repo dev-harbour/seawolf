@@ -369,18 +369,20 @@ int glfw_functions( iGlfw type, void *args )
    {
       // sw_GetKey( key )
       case GLFW_GET_KEY:
-
+         {
          int *get_key = ( int *)args;
 
          ret = ( w->keyKey == *get_key ) == GLFW_PRESS ? T : F;
+         }
          break;
 
       // sw_GetMouseButton( button )
       case GLFW_GET_MOUSEBUTTON:
-
+         {
          int *get_mousebutton = ( int *)args;
 
          ret = ( w->mouseButton == *get_mousebutton ) == GLFW_PRESS ? T : F;
+         }
          break;
 
       // sw_WinWidth()
@@ -416,10 +418,11 @@ int glfw_functions( iGlfw type, void *args )
 
       // sw_WaitEventsTimeout( timeout )
       case GLFW_WAITEVENTSTIMEOUT:
-
+         {
          double *events_timeout = ( double *)args;
 
          glfwWaitEventsTimeout( *events_timeout );
+         }
          break;
 
       default:
