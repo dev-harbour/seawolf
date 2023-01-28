@@ -4,12 +4,12 @@
 
 #include "seawolf.h"
 
-static pSeaWolf w = NULL;
+static SeaWolf *w = NULL;
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 // static functions
 static void cursor_position_callback( GLFWwindow *window, double x, double y )
 {
-   pSeaWolf s_w = glfwGetWindowUserPointer( window );
+   SeaWolf *s_w = glfwGetWindowUserPointer( window );
 
    s_w->cursorX = x;
    s_w->cursorY = y;
@@ -17,7 +17,7 @@ static void cursor_position_callback( GLFWwindow *window, double x, double y )
 
 static void key_callback( GLFWwindow *window, int key, int scancode, int action, int mods )
 {
-   pSeaWolf s_w = glfwGetWindowUserPointer( window );
+   SeaWolf *s_w = glfwGetWindowUserPointer( window );
 
    s_w->keyKey      = key;
    s_w->keyScancode = scancode;
@@ -36,7 +36,7 @@ static void key_callback( GLFWwindow *window, int key, int scancode, int action,
 
 static void mouse_button_callback( GLFWwindow *window, int button, int action, int mods )
 {
-   pSeaWolf s_w = glfwGetWindowUserPointer( window );
+   SeaWolf *s_w = glfwGetWindowUserPointer( window );
 
    s_w->mouseButton = button;
    s_w->mouseAction = action;
@@ -45,14 +45,14 @@ static void mouse_button_callback( GLFWwindow *window, int button, int action, i
 
 static void window_maximize_callback( GLFWwindow *window, int maximized )
 {
-   pSeaWolf s_w = glfwGetWindowUserPointer( window );
+   SeaWolf *s_w = glfwGetWindowUserPointer( window );
 
    s_w->winMaximized = maximized;
 }
 
 static void window_size_callback( GLFWwindow *window, int width, int height )
 {
-   pSeaWolf s_w = glfwGetWindowUserPointer( window );
+   SeaWolf *s_w = glfwGetWindowUserPointer( window );
 
    s_w->width  = width;
    s_w->height = height;
@@ -60,22 +60,52 @@ static void window_size_callback( GLFWwindow *window, int width, int height )
 
 static void hex_to_ClearColor( uint32_t hexColor )
 {
-   double r, g, b;
-   r = ( ( hexColor >> 16 ) & 0xFF ) / 255.0;
-   g = ( ( hexColor >> 8  ) & 0xFF ) / 255.0;
-   b = (   hexColor         & 0xFF ) / 255.0;
-
-   glClearColor( r, g, b, 1.0 );
+   if( ( hexColor <= 0xffffff) )
+   {
+      double r, g, b;
+      r = ( ( hexColor >> 16 ) & 0xFF ) / 255.0;
+      g = ( ( hexColor >> 8 )  & 0xFF ) / 255.0;
+      b = (   hexColor         & 0xFF ) / 255.0;
+      glClearColor( r, g, b, 1.0 );
+   }
+   else if( ( hexColor <= 0xffffffff ) )
+   {
+      double r, g, b, a;
+      r = ( ( hexColor >> 24 ) & 0xFF ) / 255.0;
+      g = ( ( hexColor >> 16 ) & 0xFF ) / 255.0;
+      b = ( ( hexColor >> 8 )  & 0xFF ) / 255.0;
+      a = ( hexColor & 0xFF )           / 255.0;
+      glClearColor( r, g, b, a );
+   }
+   else
+   {
+      printf( "Invalid hex value passed \n" );
+   }
 }
 
-static void hex_to_Color3f( uint32_t hexColor )
+static void hex_to_Colorf( uint32_t hexColor )
 {
-   float r, g, b;
-   r = ( ( hexColor >> 16 ) & 0xFF ) / 255.0;
-   g = ( ( hexColor >> 8  ) & 0xFF ) / 255.0;
-   b = (   hexColor         & 0xFF ) / 255.0;
-
-   glColor3f( r, g, b );
+   if( ( hexColor <= 0xffffff) )
+   {
+      double r, g, b;
+      r = ( ( hexColor >> 16 ) & 0xFF ) / 255.0;
+      g = ( ( hexColor >> 8 )  & 0xFF ) / 255.0;
+      b = (   hexColor         & 0xFF ) / 255.0;
+      glColor3f( r, g, b );
+   }
+   else if( ( hexColor <= 0xffffffff ) )
+   {
+      double r, g, b, a;
+      r = ( ( hexColor >> 24 ) & 0xFF ) / 255.0;
+      g = ( ( hexColor >> 16 ) & 0xFF ) / 255.0;
+      b = ( ( hexColor >> 8 )  & 0xFF ) / 255.0;
+      a = ( hexColor & 0xFF )           / 255.0;
+      glColor4f( r, g, b, a );
+   }
+   else
+   {
+      printf( "Invalid hex value passed \n" );
+   }
 }
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
@@ -92,6 +122,9 @@ bool sw_CreateWindow( int width, int height, const char *title )
    w->width  = width;
    w->height = height;
    w->title  = title;
+
+   glfwWindowHint( GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE );
+   glfwWindowHint( GLFW_ALPHA_BITS, 8 );
 
    w->window = glfwCreateWindow( w->width, w->height, w->title, NULL, NULL );
    if( ! w->window )
@@ -170,6 +203,7 @@ void end_drawing()
    glfwSwapBuffers( w->window );
 }
 
+/* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 int opengl_functions( iShape type, void *args )
 {
    int ret = 1;
@@ -191,7 +225,7 @@ int opengl_functions( iShape type, void *args )
       {
       SW_Point *point = ( SW_Point *)args;
 
-      hex_to_Color3f( point->hc );
+      hex_to_Colorf( point->hc );
       glPointSize( point->size );
       glBegin( GL_POINTS );
       glVertex2f( point->x, point->y + 1 );
@@ -204,7 +238,7 @@ int opengl_functions( iShape type, void *args )
       {
       SW_Lines *lines = ( SW_Lines *)args;
 
-      hex_to_Color3f( lines->hc );
+      hex_to_Colorf( lines->hc );
       glBegin( GL_LINES );
       glVertex2f( lines->x1, lines->y1 );
       glVertex2f( lines->x2, lines->y2 );
@@ -217,7 +251,7 @@ int opengl_functions( iShape type, void *args )
       {
       SW_Rect *rect = ( SW_Rect *)args;
 
-      hex_to_Color3f( rect->hc );
+      hex_to_Colorf( rect->hc );
       glBegin( GL_LINE_LOOP );
       glVertex2f( rect->x1, rect->y1 );
       glVertex2f( rect->x2, rect->y1 );
@@ -232,7 +266,7 @@ int opengl_functions( iShape type, void *args )
       {
       SW_FillRect *fillrect = ( SW_FillRect *)args;
 
-      hex_to_Color3f( fillrect->hc );
+      hex_to_Colorf( fillrect->hc );
       glBegin( GL_POLYGON );
       glVertex2f( fillrect->x1, fillrect->y1 );
       glVertex2f( fillrect->x2, fillrect->y1 );
@@ -247,7 +281,7 @@ int opengl_functions( iShape type, void *args )
       {
       SW_Triangle *triangle = ( SW_Triangle *)args;
 
-      hex_to_Color3f( triangle->hc );
+      hex_to_Colorf( triangle->hc );
       glBegin( GL_LINE_LOOP );
       glVertex2f( triangle->x1, triangle->y1 );
       glVertex2f( triangle->x2, triangle->y2 );
@@ -261,7 +295,7 @@ int opengl_functions( iShape type, void *args )
       {
       SW_FillTriangle * filltriangle = ( SW_FillTriangle *)args;
 
-      hex_to_Color3f( filltriangle->hc );
+      hex_to_Colorf( filltriangle->hc );
       glBegin( GL_TRIANGLES );
       glVertex2f( filltriangle->x1, filltriangle->y1 );
       glVertex2f( filltriangle->x2, filltriangle->y2 );
@@ -275,7 +309,7 @@ int opengl_functions( iShape type, void *args )
       {
       SW_Circle *circle = ( SW_Circle *)args;
 
-      hex_to_Color3f( circle->hc );
+      hex_to_Colorf( circle->hc );
       glBegin( GL_LINE_LOOP );
          for( int i = 0; i < 360; i++ )
          {
@@ -291,7 +325,7 @@ int opengl_functions( iShape type, void *args )
       {
       SW_FillCircle *fillcircle = ( SW_FillCircle *)args;
 
-      hex_to_Color3f( fillcircle->hc );
+      hex_to_Colorf( fillcircle->hc );
       glBegin( GL_POLYGON );
          for( int i = 0; i < 360; i++ )
           {
@@ -307,7 +341,7 @@ int opengl_functions( iShape type, void *args )
       {
       SW_Ellipse *ellipse = ( SW_Ellipse *)args;
 
-      hex_to_Color3f( ellipse->hc );
+      hex_to_Colorf( ellipse->hc );
          float x, y;
          for( float angle = 0; angle <= 360; angle += 0.1 )
          {
@@ -325,7 +359,7 @@ int opengl_functions( iShape type, void *args )
       {
       SW_FillEllipse *fillellipse = ( SW_FillEllipse *)args;
 
-      hex_to_Color3f( fillellipse->hc );
+      hex_to_Colorf( fillellipse->hc );
       glBegin( GL_TRIANGLE_FAN );
       glVertex2f( fillellipse->x, fillellipse->y ); // center point
          for( float angle = 0; angle <= 360; angle += 1 )
@@ -352,21 +386,51 @@ int text_functions( iText type, void *args )
 
    switch( type )
    {
-   case TEXT_FONT:
-      break;
+      // sw_OpenFont( filepath )
+      case TEXT_OPEN_FONT:
+         break;
 
-   default:
-      return 0;
+      // sw_Text( x, y, size, hc )
+      case TEXT_TEXT:
+         break;
+
+      // sw_TextWidth()
+      case TEXT_WIDTH:
+         break;
+
+      // sw_TextHeight()
+      case TEXT_HEIGHT:
+         break;
+
+      default:
+         return 0;
    }
    return ret;
 }
 
+/* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 int glfw_functions( iGlfw type, void *args )
 {
    int ret = 1;
 
    switch( type )
    {
+      // sw_SetWinOpacity( opacity )
+      case GLFW_SET_WIN_OPACITY:
+         {
+         float *opacity = ( float *)args;
+
+            if( *opacity >= 0.0f && *opacity <= 1.0f )
+            {
+               glfwSetWindowOpacity( w->window, *opacity );
+            }
+            else
+            {
+               printf("Invalid value of opacity : %f \n", *opacity );
+            }
+         }
+         break;
+
       // sw_GetKey( key )
       case GLFW_GET_KEY:
          {
@@ -430,6 +494,7 @@ int glfw_functions( iGlfw type, void *args )
    }
    return ret;
 }
+
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 double sw_GetTime( void )

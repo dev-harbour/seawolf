@@ -165,12 +165,15 @@ typedef enum iShape
 
 typedef enum iText
 {
-   TEXT_FONT,
-   TEXT_DISPOUTAT,
+   TEXT_OPEN_FONT,
+   TEXT_TEXT,
+   TEXT_WIDTH,
+   TEXT_HEIGHT,
 } iText;
 
 typedef enum iGlfw
 {
+   GLFW_SET_WIN_OPACITY,
    GLFW_GET_KEY,
    GLFW_GET_MOUSEBUTTON,
    GLFW_WIN_WIDTH,
@@ -180,6 +183,7 @@ typedef enum iGlfw
    GLFW_WAITEVENTS,
    GLFW_WAITEVENTSTIMEOUT,
 } iGlfw;
+
 
 typedef enum bool
 {
@@ -309,7 +313,7 @@ typedef struct _SeaWolf
    // color
    int              background;
 
-} SeaWolf, *pSeaWolf;
+} SeaWolf;
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 // API functions
@@ -405,7 +409,19 @@ do { \
 } while( 0 )
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+//--- Text
+
+//TODO:
+
+/* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 //--- GLFW
+
+#define sw_SetWinOpacity( opacity ) \
+({ \
+   float set_win_opacity = opacity; \
+   glfw_functions( GLFW_SET_WIN_OPACITY, &set_win_opacity ); \
+})
+
 #define sw_GetKey( key ) \
 ({ \
    int get_key = key; \
@@ -418,11 +434,11 @@ do { \
    glfw_functions( GLFW_GET_MOUSEBUTTON, &get_mousebutton ); \
 })
 
-#define sw_WinWidth()     glfw_functions( GLFW_WIN_WIDTH )
-#define sw_WinHeight()    glfw_functions( GLFW_WIN_HEIGHT )
-#define sw_WinMaximized() glfw_functions( GLFW_WIN_MAXIMIZED )
-#define sw_PollEvents()   glfw_functions( GLFW_POLLEVENTS )
-#define sw_WaitEvents()   glfw_functions( GLFW_WAITEVENTS )
+#define sw_WinWidth()     glfw_functions( GLFW_WIN_WIDTH, NULL )
+#define sw_WinHeight()    glfw_functions( GLFW_WIN_HEIGHT, NULL )
+#define sw_WinMaximized() glfw_functions( GLFW_WIN_MAXIMIZED, NULL )
+#define sw_PollEvents()   glfw_functions( GLFW_POLLEVENTS, NULL )
+#define sw_WaitEvents()   glfw_functions( GLFW_WAITEVENTS, NULL )
 
 #define sw_WaitEventsTimeout( timeout ) \
 ({ \
@@ -430,6 +446,6 @@ do { \
    glfw_functions( GLFW_WAITEVENTSTIMEOUT, &events_timeout ); \
 })
 
-//---
+/* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 double sw_GetTime( void );
 #endif /* End SEAWOLF_H_ */
