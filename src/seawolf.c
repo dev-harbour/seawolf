@@ -496,6 +496,36 @@ int glfw_functions( iGlfw type, void *args )
 }
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+/*                                  Strings                                  */
+char *sw_MemoRead( const char *cFile )
+{
+   FILE *file = fopen( cFile, "rb" );
+   if( file == NULL )
+   {
+      return "";
+   }
+
+   fseek( file, 0, SEEK_END );
+   long fileSize = ftell( file );
+   fseek( file, 0, SEEK_SET );
+
+   char *buffer = malloc( fileSize + 1 );
+   if( buffer == NULL )
+   {
+      fclose( file );
+      return "";
+   }
+
+   fread( buffer, 1, fileSize, file );
+   fclose( file );
+   buffer[ fileSize ] = '\0';
+
+   char *result = strdup( buffer );
+   free( buffer );
+
+   return result;
+}
+/* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 bool sw_IsMouseInCircle( double circleX, double circleY, double radius, double cursorX, double cursorY )
 {
