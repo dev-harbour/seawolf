@@ -1,11 +1,14 @@
 <div align="center">
+
    <h1 align="center">SeaWolf</h1>
+
    <p align="center">
       Playground with graphics, with the use of
       <a href="https://www.khronos.org/opengl">OpenGL</a>
       and
       <a href="https://www.glfw.org/">GLFW</a>
    </p>
+   
 </div>
 <br />
 
