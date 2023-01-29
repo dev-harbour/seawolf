@@ -1,8 +1,5 @@
 <div align="center">
    <h1 align="center">SeaWolf</h1>
-<!--
-   <h3 align="center">Programming in Clipper using C language</h3>
--->
    <p align="center">
       Playground with graphics, with the use of
       <a href="https://www.khronos.org/opengl">OpenGL</a>
