@@ -497,9 +497,99 @@ int glfw_functions( iGlfw type, void *args )
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
+bool sw_IsMouseInCircle( double circleX, double circleY, double radius, double cursorX, double cursorY )
+{
+   double distance = sqrt( ( cursorX - circleX ) * ( cursorX - circleX ) + ( cursorY - circleY ) * ( cursorY - circleY ) );
+   if( distance <= radius )
+      return T;
+   else
+   return F;
+}
+
+bool sw_IsMouseInEllipse( double ellipseX, double ellipseY, double radiusX, double radiusY, double cursorX, double cursorY )
+{
+   if( ( pow( ( cursorX - ellipseX ), 2 ) / pow( radiusX, 2 ) ) + ( pow( ( cursorY - ellipseY ), 2 ) / pow( radiusY, 2 ) ) <= 1 )
+      return T;
+   else
+   return F;
+}
+
+bool sw_IsMouseInHexagon( double hexagonX, double hexagonY, double radius, double cursorX, double cursorY )
+{
+   double distance = sqrt( pow( cursorX - hexagonX, 2 ) + pow( cursorY - hexagonY, 2 ) );
+   if( distance <= radius )
+      return T;
+   else
+   return F;
+}
+
+bool sw_IsMouseInRect( double rectX1, double rectY1, double rectWidth, double rectHeight, double cursorX, double cursorY )
+{
+   return cursorX >= rectX1 && cursorY >= rectY1 && cursorX <= rectX1 + rectWidth && cursorY <= rectY1 + rectHeight;
+}
+
+static int Corner( double dx, double dy, double r )
+{
+   return( dx < 0 && dy < 0 && dx * dx + dy * dy > r * r );
+}
+
+bool sw_IsMouseInRoundedRect( double rectX1, double rectY1, double rectWidth, double rectHeight, double radius, double cursorX, double cursorY )
+{
+   int is_outside = ( cursorX < rectX1 ) ||
+                    ( cursorX > rectX1 + rectWidth ) ||
+                    ( cursorY < rectY1 ) ||
+                    ( cursorY > rectY1 + rectHeight ) ||
+                    ( Corner( cursorX - rectX1 - radius, cursorY - rectY1 - radius, radius ) ) ||
+                    ( Corner( cursorX - rectX1 - radius, rectY1 + rectHeight - radius - cursorY, radius ) ) ||
+                    ( Corner( rectX1 + rectWidth - radius - cursorX, rectY1 + rectHeight - radius - cursorY, radius ) ) ||
+                    ( Corner( rectX1 + rectWidth - radius - cursorX, cursorY - rectY1 - radius, radius ) );
+
+   if( is_outside )
+      return 0;
+   else
+      return 1;
+}
+
+bool sw_IsMouseInTriangle( double x1, double y1, double x2, double y2, double x3, double y3, double cursorX, double cursorY )
+{
+   double s = y1 * x3 - x1 * y3 + ( y3 - y1 ) * cursorX + ( x1 - x3 ) * cursorY;
+   double t = x1 * y2 - y1 * x2 + ( y1 - y2 ) * cursorX + ( x2 - x1 ) * cursorY;
+
+   if( ( s < 0 ) != ( t < 0 ) )
+      return 0;
+   double a = -y2 * x3 + y1 * ( x3 - x2 ) + x1 * ( y2 - y3 ) + x2 * y3;
+   if( a < 0.0 )
+   {
+      s = -s;
+      t = -t;
+      a = -a;
+   }
+   return s > 0 && t > 0 && ( s + t ) < a;
+}
+
+/*
+ * The sw_GetTime function is a function that returns time in seconds with microsecond accuracy.
+ * This is done using the timeval structure and the gettimeofday function, which retrieves the current time in seconds
+ * and microseconds since the beginning of epoch (1970-01-01 00:00:00 UTC). The function returns a double value consisting
+ * of the sum of seconds and microseconds divided by 1,000,000.
+ */
 double sw_GetTime( void )
 {
    struct timeval tv;
    gettimeofday( &tv, NULL );
    return ( double ) tv.tv_sec + ( double ) tv.tv_usec / 1000000;
 }
+
+/*
+ * The `sw_Sleep` function is a function that allows you to stop the program for a period of time specified in milliseconds.
+ * This is a Linux and Windows implementation of the "sleep" function that uses the nanosleep() system call to implement the delay.
+ * The argument of the function is the number of milliseconds for which we want to stop the program.
+ */
+void sw_Sleep( unsigned int milliseconds )
+{
+   struct timespec req;
+   req.tv_sec = milliseconds / 1000;
+   req.tv_nsec = ( milliseconds % 1000 ) * 1000000;
+   nanosleep( &req, NULL );
+}
+
