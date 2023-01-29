@@ -1,6 +1,14 @@
-# seawolf
-
-Playground with graphics, with the use of [OpenGL](https://www.khronos.org/opengl) and [GLFW](https://www.glfw.org/)
+<div align="center">
+   <h1 align="center">SeaWolf</h1>
+   <br />
+   <h1 align="center">Programming in Clipper using C language.</h1>
+   <p align="center">
+      With the use of
+      <a href="https://www.khronos.org/opengl">OpenGL</a>
+      and
+      <a href="https://www.glfw.org/">GLFW</a>
+   </p>
+</div>
 
 ### Getting Started
 
