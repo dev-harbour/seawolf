@@ -548,7 +548,13 @@ const char *sw_MemoRead( const char *filePath )
       return GC_STRDUP("");
    }
 
-   fread( buffer, 1, fileSize, file );
+   long int itemsRead = fread( buffer, 1, fileSize, file );
+   if( itemsRead != fileSize )
+   {
+      fprintf( stderr, "Error: Only %ld bytes read, expected %ld\n", itemsRead, fileSize );
+      return GC_STRDUP("");
+   }
+
    fclose( file );
    buffer[ fileSize ] = '\0';
 

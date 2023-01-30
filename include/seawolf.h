@@ -11,12 +11,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <sys/time.h>
 
 #include <gc/gc.h>
 
 #include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 // tokens
@@ -466,4 +466,5 @@ do { \
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 double sw_GetTime( void );
+void sw_Sleep( unsigned int milliseconds );
 #endif /* End SEAWOLF_H_ */
