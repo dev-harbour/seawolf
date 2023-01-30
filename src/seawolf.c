@@ -497,6 +497,17 @@ int glfw_functions( iGlfw type, void *args )
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 /*                                  Strings                                  */
+uint32_t sw_At( const char *search, const char *target )
+{
+   char *occurrence = strstr( target, search );
+   if( occurrence == NULL )
+   {
+      return 0;
+   }
+
+   return (uint32_t)( occurrence - target + 1 );
+}
+
 const char *sw_Left( const char *str, int count )
 {
    int len = strlen( str );
@@ -542,6 +553,22 @@ const char *sw_MemoRead( const char *filePath )
    buffer[ fileSize ] = '\0';
 
    return buffer;
+}
+
+uint32_t sw_RAt( const char *search, const char *target )
+{
+   int targetLen = strlen( target );
+   int searchLen = strlen( search );
+
+   for( int i = targetLen - searchLen; i >= 0; i-- )
+   {
+      if( strncmp( &target[ i ], search, searchLen ) == 0 )
+      {
+         return (uint32_t)( i + 1 );
+      }
+   }
+
+   return 0;
 }
 
 const char *sw_Right( const char *str, int count )
@@ -606,6 +633,7 @@ const char *sw_SubStr( const char *str, int start, int count )
    char *subString = GC_MALLOC( count + 1 );
    strncpy( subString, str + start, count );
    subString[ count ] = '\0';
+
    return subString;
 }
 
