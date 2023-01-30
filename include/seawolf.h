@@ -13,11 +13,7 @@
 #include <string.h>
 #include <sys/time.h>
 
-#ifdef _WIN32
-   #include <winsock.h>
-#else
-   #include <sys/file.h>
-#endif
+#include <gc/gc.h>
 
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
@@ -333,7 +329,11 @@ int text_functions( iText type, void *args );
 int glfw_functions( iGlfw type, void *args );
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 /*                                  Strings                                  */
-char *sw_MemoRead( const char *cFile );
+const char *sw_Left( const char *str, int count );
+const char *sw_MemoRead( const char *filePath );
+const char *sw_Right( const char *str, int count );
+const char *sw_SubStr( const char *str, int start, int count );
+
 
 bool sw_IsMouseInCircle( double circleX, double circleY, double radius, double cursorX, double cursorY );
 bool sw_IsMouseInEllipse( double ellipseX, double ellipseY, double radiusX, double radiusY, double cursorX, double cursorY );
@@ -341,7 +341,6 @@ bool sw_IsMouseInHexagon( double hexagonX, double hexagonY, double radius, doubl
 bool sw_IsMouseInRect( double rectX1, double rectY1, double rectWidth, double rectHeight, double cursorX, double cursorY );
 bool sw_IsMouseInRoundedRect( double rectX1, double rectY1, double rectWidth, double rectHeight, double radius, double cursorX, double cursorY );
 bool sw_IsMouseInTriangle( double x1, double y1, double x2, double y2, double x3, double y3, double cursorX, double cursorY );
-char *sw_MemoRead( const char *filePath );
 
 //---
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */

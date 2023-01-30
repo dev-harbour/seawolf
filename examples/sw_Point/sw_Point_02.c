@@ -37,7 +37,7 @@ int main( void )
          }
 
       sw_End();
-      glfwPollEvents();
+      sw_PollEvents();
    }
    sw_CloseWindow();
    return 0;

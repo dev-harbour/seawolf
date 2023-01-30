@@ -497,34 +497,118 @@ int glfw_functions( iGlfw type, void *args )
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 /*                                  Strings                                  */
-char *sw_MemoRead( const char *cFile )
+const char *sw_Left( const char *str, int count )
 {
-   FILE *file = fopen( cFile, "rb" );
+   int len = strlen( str );
+
+   if( count <= 0 )
+   {
+      return GC_STRDUP("");
+   }
+
+   if( count >= len )
+   {
+      return GC_STRDUP( str );
+   }
+
+   char *subString = GC_MALLOC( count + 1 );
+   strncpy( subString, str, count );
+   subString[ count ] = '\0';
+
+   return subString;
+}
+
+const char *sw_MemoRead( const char *filePath )
+{
+   FILE *file = fopen( filePath, "rb" );
    if( file == NULL )
    {
-      return "";
+      return GC_STRDUP("");
    }
 
    fseek( file, 0, SEEK_END );
    long fileSize = ftell( file );
    fseek( file, 0, SEEK_SET );
 
-   char *buffer = malloc( fileSize + 1 );
+   char *buffer = GC_MALLOC( fileSize + 1 );
    if( buffer == NULL )
    {
       fclose( file );
-      return "";
+      return GC_STRDUP("");
    }
 
    fread( buffer, 1, fileSize, file );
    fclose( file );
    buffer[ fileSize ] = '\0';
 
-   char *result = strdup( buffer );
-   free( buffer );
-
-   return result;
+   return buffer;
 }
+
+const char *sw_Right( const char *str, int count )
+{
+   int len = strlen( str );
+
+   if( count <= 0 )
+   {
+      return GC_STRDUP("");
+   }
+
+   if( count >= len )
+   {
+      return GC_STRDUP( str );
+   }
+
+   char *subString = GC_MALLOC( count + 1 );
+   strncpy( subString, str + len - count, count );
+   subString[ count ] = '\0';
+
+   return subString;
+}
+
+const char *sw_SubStr( const char *str, int start, int count )
+{
+   int nSize = strlen( str );
+
+   if( start > 0 )
+   {
+      if( --start > nSize )
+         count = 0;
+      }
+
+      if( count > 0 )
+      {
+         if( start < 0 )
+         {
+            start = nSize + start;
+         }
+         if( start < 0 )
+         {
+            start = 0;
+         }
+         if( start + count > nSize )
+         {
+            count = nSize - start;
+         }
+      }
+   else
+   {
+      if( start < 0 )
+      {
+         start = nSize + start;
+      }
+      if( start < 0 )
+      {
+         start = 0;
+      }
+      count = nSize - start;
+   }
+
+   char *subString = GC_MALLOC( count + 1 );
+   strncpy( subString, str + start, count );
+   subString[ count ] = '\0';
+   return subString;
+}
+
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 bool sw_IsMouseInCircle( double circleX, double circleY, double radius, double cursorX, double cursorY )
