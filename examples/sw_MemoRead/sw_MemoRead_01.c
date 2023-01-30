@@ -7,7 +7,7 @@
 int main( void )
 {
    const char *filePath = "sw_MemoRead_01.c";
-   char *fileContent = sw_MemoRead( filePath );
+   const char *fileContent = sw_MemoRead( filePath );
 
    sw_CreateWindow( 830, 450, "sw_MemoRead" );
 
@@ -24,11 +24,10 @@ int main( void )
          sw_Background( 0x003232 );
 
       sw_End();
-      glfwPollEvents();
+      sw_PollEvents();
    }
 
    printf( "%s \n", fileContent );
-   free( fileContent );
 
    sw_CloseWindow();
    return 0;
