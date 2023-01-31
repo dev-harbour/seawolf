@@ -496,6 +496,30 @@ int glfw_functions( iGlfw type, void *args )
 }
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+/*                                Date & Time                                */
+const char *sw_Date( const char *format )
+{
+   time_t currentTime = time( NULL );
+   struct tm *localTime = localtime( &currentTime );
+   static char result[ 256 ];
+
+   if( format[ 0 ] == '\0' )
+   {
+      strftime( result, sizeof( result ), "%d.%m.%Y", localTime );
+   }
+   else
+   {
+      size_t len = strftime( result, sizeof( result ), format, localTime );
+      if( len == 0 )
+      {
+         return "Invalid format";
+      }
+   }
+
+   return result;
+}
+
+/* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 /*                                  Strings                                  */
 uint32_t sw_At( const char *search, const char *target )
 {

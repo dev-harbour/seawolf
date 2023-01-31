@@ -328,6 +328,10 @@ int opengl_functions( iShape type, void *args );
 int text_functions( iText type, void *args );
 int glfw_functions( iGlfw type, void *args );
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+/*                                Date & Time                                */
+const char *sw_Date( const char *format );
+
+/* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 /*                                  Strings                                  */
 uint32_t sw_At( const char *search, const char *target );
 const char *sw_Left( const char *str, int count );
