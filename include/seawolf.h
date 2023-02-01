@@ -17,7 +17,7 @@
 #include <gc/gc.h>
 
 #include <GLFW/glfw3.h>
-
+#include <stb_truetype.h>
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 // tokens
 #define KEY_UNKNOWN            -1
@@ -314,6 +314,8 @@ typedef struct _SeaWolf
    int              background;
    // Inspect or change a system setting
    const char      *setDateFormat;
+   // glGenTextures
+   uint32_t         texture;
 
 } SeaWolf;
 
@@ -325,7 +327,7 @@ bool sw_CloseWindow();
 void begin_drawing();
 void end_drawing();
 int opengl_functions( iShape type, void *args );
-int text_functions( iText type, void *args );
+uint32_t text_functions( iText type, void *args )
 int glfw_functions( iGlfw type, void *args );
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 /*                                Date & Time                                */

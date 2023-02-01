@@ -2,6 +2,7 @@
  * Copyright 2022 - 2023 Rafał Jopek ( rafaljopek at hotmail com )
  */
 
+#define STB_TRUETYPE_IMPLEMENTATION
 #include "seawolf.h"
 
 static SeaWolf *w = NULL;
@@ -380,7 +381,7 @@ int opengl_functions( iShape type, void *args )
    return ret;
 }
 
-int text_functions( iText type, void *args )
+uint32_t text_functions( iText type, void *args )
 {
    int ret = 1;
    UNUSED( args );
@@ -389,9 +390,40 @@ int text_functions( iText type, void *args )
    {
       // sw_OpenFont( filepath )
       case TEXT_OPEN_FONT:
+         {
+         const char *filepath = ( const char *)args;
+
+         uint8_t ttf_buffer[ 1 << 20 ];
+         uint8_t temp_bitmap[ w->width * w->height ];
+         stbtt_bakedchar cdata[ 256 ];
+
+         FILE *file = fopen( filepath, "rb" );
+         if( file == NULL )
+         {
+            printf( "Error opening file \n" );
+            break;
+         }
+
+         size_t bytesRead = fread( ttf_buffer, 1, 1 << 20, file );
+         if( bytesRead != 1 << 20 )
+         {
+            printf( "Error reading file \n" );
+            break;
+         }
+         fclose( file );
+
+         stbtt_BakeFontBitmap( ttf_buffer, 0, 0.0, temp_bitmap, w->width, w->height, 0, 255, cdata );
+
+         glGenTextures( 1, &w->texture );
+         glBindTexture( GL_TEXTURE_2D, w->texture );
+         glTexImage2D( GL_TEXTURE_2D, 0, GL_ALPHA, w->width, w->height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, temp_bitmap );
+         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+
+         return w->texture;
+         }
          break;
 
-      // sw_Text( x, y, size, hc )
+      // sw_Text( x, y, text, size, hc )
       case TEXT_TEXT:
          break;
 
