@@ -122,6 +122,7 @@ bool sw_CreateWindow( int width, int height, const char *title )
    w->width  = width;
    w->height = height;
    w->title  = title;
+   w->setDateFormat = "%d.%m.%y";
 
    glfwWindowHint( GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE );
    glfwWindowHint( GLFW_ALPHA_BITS, 8 );
@@ -497,28 +498,32 @@ int glfw_functions( iGlfw type, void *args )
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 /*                                Date & Time                                */
-const char *sw_Date( const char *format )
+const char *sw_CDate()
 {
    time_t currentTime = time( NULL );
    struct tm *localTime = localtime( &currentTime );
    static char result[ 256 ];
 
-   if( format[ 0 ] == '\0' )
+   size_t len = strftime( result, sizeof( result ), w->setDateFormat, localTime );
+   if( len == 0 )
    {
-      strftime( result, sizeof( result ), "%d.%m.%Y", localTime );
-   }
-   else
-   {
-      size_t len = strftime( result, sizeof( result ), format, localTime );
-      if( len == 0 )
-      {
-         return "Invalid format";
-      }
+      return "Invalid format";
    }
 
    return result;
 }
 
+bool sw_SetDateFormat( const char *format )
+{
+
+   if( format )
+   {
+      w->setDateFormat = format;
+      return T;
+   }
+
+   return F;
+}
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 /*                                  Strings                                  */
 uint32_t sw_At( const char *search, const char *target )

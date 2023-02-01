@@ -18,9 +18,7 @@ int main( void )
       sw_PollEvents();
    }
 
-   printf( "Result: %s\n", sw_Date( "" ) );              // Result: 31.01.2023
-   printf( "Result: %s\n", sw_Date( "%d.%m.%y" ) );      // Result: 31.01.23
-   printf( "Result: %s\n", sw_Date("%invalid_format%")); // Result: Invalid format
+   printf( "Result: %s\n", sw_CDate() );
 
    sw_CloseWindow();
    return 0;

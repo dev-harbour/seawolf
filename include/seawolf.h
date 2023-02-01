@@ -294,8 +294,6 @@ typedef struct _SeaWolf
    GLFWwindow      *window;      // handle of the created window
    int              width;       // desired width, in screen coordinates, of the window
    int              height;      // desired height, in screen coordinates
-   int              tmp_width;
-   int              tmp_height;
    const char      *title;       // initial, UTF-8 encoded window title
    bool             closeFlag;   // returns the value of the close flag of the specified window
    // cursor
@@ -314,6 +312,8 @@ typedef struct _SeaWolf
    int              winMaximized;// GLFW_TRUE if the window was maximized, or GLFW_FALSE if it was restored
    // color
    int              background;
+   // Inspect or change a system setting
+   const char      *setDateFormat;
 
 } SeaWolf;
 
@@ -329,8 +329,8 @@ int text_functions( iText type, void *args );
 int glfw_functions( iGlfw type, void *args );
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 /*                                Date & Time                                */
-const char *sw_Date( const char *format );
-
+const char *sw_CDate();
+bool sw_SetDateFormat( const char *format );
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 /*                                  Strings                                  */
 uint32_t sw_At( const char *search, const char *target );
