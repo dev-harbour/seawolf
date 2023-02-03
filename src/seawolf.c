@@ -113,6 +113,8 @@ static void hex_to_Colorf( uint32_t hexColor )
 // API functions
 bool sw_CreateWindow( int width, int height, const char *title )
 {
+   GC_INIT();
+
    if( ! glfwInit() )
    {
       exit( EXIT_FAILURE );
@@ -185,6 +187,7 @@ void begin_drawing()
    glViewport( 0, 0, w->width, w->height );
    hex_to_ClearColor( w->background );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
    glDisable( GL_CULL_FACE );
    glDisable( GL_DEPTH_TEST );
    glDisable( GL_BLEND );
@@ -202,6 +205,12 @@ void begin_drawing()
 
 void end_drawing()
 {
+   GLenum error = glGetError();
+   if( error != GL_NO_ERROR )
+   {
+      printf( "OpenGL error: %d\n", error );
+   }
+
    glfwSwapBuffers( w->window );
 }
 
@@ -381,50 +390,83 @@ int opengl_functions( iShape type, void *args )
    return ret;
 }
 
-uint32_t text_functions( iText type, void *args )
+int text_functions( iText type, void *args )
 {
    int ret = 1;
-   UNUSED( args );
 
    switch( type )
    {
       // sw_OpenFont( filepath )
       case TEXT_OPEN_FONT:
          {
-         const char *filepath = ( const char *)args;
+         SW_Text *text = ( SW_Text *)args;
 
-         uint8_t ttf_buffer[ 1 << 20 ];
-         uint8_t temp_bitmap[ w->width * w->height ];
-         stbtt_bakedchar cdata[ 256 ];
-
-         FILE *file = fopen( filepath, "rb" );
+         FILE *file = fopen( text->filePath, "rb" );
          if( file == NULL )
          {
-            printf( "Error opening file \n" );
-            break;
+            perror( "File opening failed" );
+            ret = -1;
          }
 
-         size_t bytesRead = fread( ttf_buffer, 1, 1 << 20, file );
-         if( bytesRead != 1 << 20 )
+         fseek( file, 0, SEEK_END );
+         size_t fileSize = ftell( file );
+         fseek( file, 0, SEEK_SET );
+
+         uint8_t *fileBuffer = GC_MALLOC( fileSize + 1 );
+         if( fileBuffer == NULL )
          {
-            printf( "Error reading file \n" );
-            break;
+            fclose( file );
+            perror( "Memory allocation failed" );
+            ret = 0;
          }
+
+         size_t itemsRead = fread( fileBuffer, 1, fileSize, file );
+         if( itemsRead != fileSize )
+         {
+            fprintf( stderr, "Error: Only %lld bytes read, expected %lld\n", itemsRead, fileSize );
+            fclose( file );
+            GC_FREE( fileBuffer );
+            ret = 0;
+         }
+
          fclose( file );
 
-         stbtt_BakeFontBitmap( ttf_buffer, 0, 0.0, temp_bitmap, w->width, w->height, 0, 255, cdata );
+         uint8_t tempBitmap[ w->width * w->height ];
+         stbtt_BakeFontBitmap( fileBuffer, 0, 32.0, tempBitmap, w->width, w->height, 32, 96, text->cdata );
 
-         glGenTextures( 1, &w->texture );
-         glBindTexture( GL_TEXTURE_2D, w->texture );
-         glTexImage2D( GL_TEXTURE_2D, 0, GL_ALPHA, w->width, w->height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, temp_bitmap );
+         glGenTextures( 1, &text->texture );
+         glBindTexture( GL_TEXTURE_2D, text->texture );
+         glTexImage2D( GL_TEXTURE_2D, 0, GL_ALPHA, w->width, w->height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tempBitmap );
          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
-         return w->texture;
+         ret = 1; xyzHarbour7
          }
          break;
 
       // sw_Text( x, y, text, size, hc )
       case TEXT_TEXT:
+         {
+         SW_Text *text = ( SW_Text *)args;
+
+         hex_to_Colorf( text->hc );
+         glBindTexture( GL_TEXTURE_2D, text->texture );
+         glBegin( GL_QUADS );
+
+            for( size_t i = 0; i < strlen( text->text ); i++ )
+            {
+               if( text->text[ i ] >= 32 && text->text[ i ] <= 126 )
+               {
+                  stbtt_aligned_quad q;
+                  stbtt_GetBakedQuad( text->cdata, w->width, w->height, text->text[ i ] - 32, &text->x, &text->y, &q, 1 );
+                  glTexCoord2f( q.s0, q.t0 ); glVertex2f( q.x0 * text->size, q.y0 * text->size );
+                  glTexCoord2f( q.s1, q.t0 ); glVertex2f( q.x1 * text->size, q.y0 * text->size );
+                  glTexCoord2f( q.s1, q.t1 ); glVertex2f( q.x1 * text->size, q.y1 * text->size );
+                  glTexCoord2f( q.s0, q.t1 ); glVertex2f( q.x0 * text->size, q.y1 * text->size );
+               }
+            }
+         glEnd();
+         }
          break;
 
       // sw_TextWidth()
@@ -595,31 +637,35 @@ const char *sw_MemoRead( const char *filePath )
    FILE *file = fopen( filePath, "rb" );
    if( file == NULL )
    {
-      return GC_STRDUP("");
+      perror( "File opening failed" );
+      return GC_STRDUP( "" );
    }
 
    fseek( file, 0, SEEK_END );
-   long fileSize = ftell( file );
+   size_t fileSize = ftell( file );
    fseek( file, 0, SEEK_SET );
 
-   char *buffer = GC_MALLOC( fileSize + 1 );
-   if( buffer == NULL )
+   char *fileBuffer = GC_MALLOC( fileSize + 1 );
+   if( fileBuffer == NULL )
    {
       fclose( file );
-      return GC_STRDUP("");
+      perror( "Memory allocation failed" );
+      return GC_STRDUP( "" );
    }
 
-   long int itemsRead = fread( buffer, 1, fileSize, file );
+   size_t itemsRead = fread( fileBuffer, 1, fileSize, file );
    if( itemsRead != fileSize )
    {
-      fprintf( stderr, "Error: Only %ld bytes read, expected %ld\n", itemsRead, fileSize );
-      return GC_STRDUP("");
+      fprintf( stderr, "Error: Only %lld bytes read, expected %lld\n", itemsRead, fileSize );
+      fclose( file );
+      GC_FREE( fileBuffer );
+      return GC_STRDUP( "" );
    }
 
    fclose( file );
-   buffer[ fileSize ] = '\0';
+   fileBuffer[ fileSize ] = '\0';
 
-   return buffer;
+   return fileBuffer;
 }
 
 uint32_t sw_RAt( const char *search, const char *target )
