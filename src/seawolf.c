@@ -440,7 +440,7 @@ int text_functions( iText type, void *args )
          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
-         ret = 1; xyzHarbour7
+         ret = 1;
          }
          break;
 
