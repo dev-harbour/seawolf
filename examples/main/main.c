@@ -8,7 +8,7 @@ int main( void )
 {
    const char *text = "Hello Window";
    int x1, y1, x2, y2;
-   uint8_t i, ii;
+   uint8_t i;
    int n = 46, radius = 100;
 
    sw_CreateWindow( 830, 450, text );
@@ -32,7 +32,7 @@ int main( void )
       sw_End();
       sw_PollEvents();
    }
-   
+
    sw_CloseWindow();
    return 0;
 }
