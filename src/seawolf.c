@@ -86,7 +86,7 @@ static void hex_to_ClearColor( uint32_t hexColor )
 
 static void hex_to_Colorf( uint32_t hexColor )
 {
-   if( ( hexColor <= 0xffffff) )
+   if( ( hexColor <= 0xffffff ) )
    {
       double r, g, b;
       r = ( ( hexColor >> 16 ) & 0xFF ) / 255.0;
@@ -208,7 +208,7 @@ void end_drawing()
    GLenum error = glGetError();
    if( error != GL_NO_ERROR )
    {
-      printf( "OpenGL error: %d\n", error );
+      printf( "OpenGL error: %d \n", error );
    }
 
    glfwSwapBuffers( w->window );
@@ -423,7 +423,7 @@ int text_functions( iText type, void *args )
          size_t itemsRead = fread( fileBuffer, 1, fileSize, file );
          if( itemsRead != fileSize )
          {
-            fprintf( stderr, "Error: Only %lld bytes read, expected %lld\n", itemsRead, fileSize );
+            fprintf( stderr, "Error: Only %lld bytes read, expected %lld \n", itemsRead, fileSize );
             fclose( file );
             GC_FREE( fileBuffer );
             ret = 0;
@@ -656,7 +656,7 @@ const char *sw_MemoRead( const char *filePath )
    size_t itemsRead = fread( fileBuffer, 1, fileSize, file );
    if( itemsRead != fileSize )
    {
-      fprintf( stderr, "Error: Only %lld bytes read, expected %lld\n", itemsRead, fileSize );
+      fprintf( stderr, "Error: Only %lld bytes read, expected %lld \n", itemsRead, fileSize );
       fclose( file );
       GC_FREE( fileBuffer );
       return GC_STRDUP( "" );
