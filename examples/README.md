@@ -12,7 +12,7 @@
 
    ```
       $ cd examples/main
-      $ gcc main.c -o main -I ../../include -L ../../lib/win/mingw64 -lgc -lseawolf -lglfw3 -lopengl32 -lm
+      $ gcc main.c -o main -I ../../include -L ../../lib/win/mingw64  -lseawolf -lgc -lglfw3 -lopengl32 -lm
    ```
 
 ## Installing on Linux
@@ -28,6 +28,6 @@
 
    ```
       $ cd examples/main
-      $ gcc main.c -o main -I ../../include -L ../../lib/linux/gcc -lseawolf -lglfw -GL -lm
+      $ gcc main.c -o main -I ../../include -L ../../lib/linux/gcc -lseawolf -lgc -lglfw -GL -lm
    ```
 ---
