@@ -299,7 +299,7 @@ typedef struct _SW_Text
    float size;
    const char *filePath;
    uint32_t texture;
-   stbtt_bakedchar cdata[ 96 ];
+   stbtt_bakedchar *cdata;
    uint32_t hc;
 } SW_Text;
 

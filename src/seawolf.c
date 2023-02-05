@@ -417,7 +417,7 @@ int text_functions( iText type, void *args )
          {
             fclose( file );
             perror( "Memory allocation failed" );
-            ret = 0;
+            ret = -1;
          }
 
          size_t itemsRead = fread( fileBuffer, 1, fileSize, file );
@@ -426,12 +426,28 @@ int text_functions( iText type, void *args )
             fprintf( stderr, "Error: Only %lld bytes read, expected %lld \n", itemsRead, fileSize );
             fclose( file );
             GC_FREE( fileBuffer );
-            ret = 0;
+            ret = -1;
          }
 
          fclose( file );
 
-         uint8_t tempBitmap[ w->width * w->height ];
+         uint8_t *tempBitmap = GC_MALLOC( w->width * w->height * sizeof( uint8_t ) );
+         if( tempBitmap == NULL )
+         {
+            fprintf( stderr, "Error: Unable to allocate memory for tempBitmap. \n" );
+            GC_FREE( fileBuffer );
+            ret = -1;
+         }
+
+         text->cdata = GC_MALLOC( 96 * sizeof( stbtt_bakedchar ) );
+         if (text->cdata == NULL)
+         {
+            fprintf( stderr, "Error: Unable to allocate memory for cdata. \n" );
+            GC_FREE( fileBuffer );
+            GC_FREE( tempBitmap );
+            ret = -1;
+         }
+
          stbtt_BakeFontBitmap( fileBuffer, 0, 32.0, tempBitmap, w->width, w->height, 32, 96, text->cdata );
 
          glGenTextures( 1, &text->texture );
@@ -440,6 +456,7 @@ int text_functions( iText type, void *args )
          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
+         GC_FREE( tempBitmap );
          ret = 1;
          }
          break;
@@ -452,6 +469,12 @@ int text_functions( iText type, void *args )
          hex_to_Colorf( text->hc );
          glBindTexture( GL_TEXTURE_2D, text->texture );
          glBegin( GL_QUADS );
+
+            if( ! text->cdata )
+            {
+               fprintf( stderr, "Error: cdata is null. \n" );
+               ret = -1;
+            }
 
             for( size_t i = 0; i < strlen( text->text ); i++ )
             {
@@ -501,7 +524,7 @@ int glfw_functions( iGlfw type, void *args )
             }
             else
             {
-               printf("Invalid value of opacity : %f \n", *opacity );
+               printf( "Invalid value of opacity : %f \n", *opacity );
             }
          }
          break;
@@ -677,7 +700,7 @@ uint32_t sw_RAt( const char *search, const char *target )
    {
       if( strncmp( &target[ i ], search, searchLen ) == 0 )
       {
-         return (uint32_t)( i + 1 );
+         return ( uint32_t )( i + 1 );
       }
    }
 
@@ -690,7 +713,7 @@ const char *sw_Right( const char *str, int count )
 
    if( count <= 0 )
    {
-      return GC_STRDUP("");
+      return GC_STRDUP( "" );
    }
 
    if( count >= len )
