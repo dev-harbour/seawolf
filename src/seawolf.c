@@ -2,7 +2,6 @@
  * Copyright 2022 - 2023 Rafał Jopek ( rafaljopek at hotmail com )
  */
 
-#define STB_TRUETYPE_IMPLEMENTATION
 #include "seawolf.h"
 
 static SeaWolf *w = NULL;
@@ -180,7 +179,7 @@ bool sw_CloseWindow()
 }
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
-void begin_drawing()
+void sw_begin_drawing()
 {
    glfwGetFramebufferSize( w->window, &w->width, &w->height );
 
@@ -203,7 +202,7 @@ void begin_drawing()
    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 }
 
-void end_drawing()
+void sw_end_drawing()
 {
    GLenum error = glGetError();
    if( error != GL_NO_ERROR )
@@ -215,7 +214,7 @@ void end_drawing()
 }
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
-int opengl_functions( iShape type, void *args )
+int sw_opengl_functions( iShape type, void *args )
 {
    int ret = 1;
 
@@ -231,13 +230,13 @@ int opengl_functions( iShape type, void *args )
       break;
 
    // sw_Point( x, y, hc )
-   // sw_Point( x, y, size, hc )
+   // sw_PointSize( x, y, size, hc )
    case OPENGL_POINT:
       {
       SW_Point *point = ( SW_Point *)args;
 
       hex_to_Colorf( point->hc );
-      glPointSize( point->size );
+      point->size == 0 ? glPointSize( 1.0 ) : glPointSize( point->size );
       glBegin( GL_POINTS );
       glVertex2f( point->x, point->y + 1 );
       glEnd();
@@ -390,106 +389,17 @@ int opengl_functions( iShape type, void *args )
    return ret;
 }
 
-int text_functions( iText type, void *args )
+/* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+int sw_text_functions( iText type, void *args )
 {
    int ret = 1;
 
+   UNUSED( args );
    switch( type )
    {
-      // sw_OpenFont( filepath )
-      case TEXT_OPEN_FONT:
-         {
-         SW_Text *text = ( SW_Text *)args;
-
-         FILE *file = fopen( text->filePath, "rb" );
-         if( file == NULL )
-         {
-            perror( "File opening failed" );
-            ret = -1;
-         }
-
-         fseek( file, 0, SEEK_END );
-         size_t fileSize = ftell( file );
-         fseek( file, 0, SEEK_SET );
-
-         uint8_t *fileBuffer = GC_MALLOC( fileSize + 1 );
-         if( fileBuffer == NULL )
-         {
-            fclose( file );
-            perror( "Memory allocation failed" );
-            ret = -1;
-         }
-
-         size_t itemsRead = fread( fileBuffer, 1, fileSize, file );
-         if( itemsRead != fileSize )
-         {
-            fprintf( stderr, "Error: Only %lld bytes read, expected %lld \n", itemsRead, fileSize );
-            fclose( file );
-            GC_FREE( fileBuffer );
-            ret = -1;
-         }
-
-         fclose( file );
-
-         uint8_t *tempBitmap = GC_MALLOC( w->width * w->height * sizeof( uint8_t ) );
-         if( tempBitmap == NULL )
-         {
-            fprintf( stderr, "Error: Unable to allocate memory for tempBitmap. \n" );
-            GC_FREE( fileBuffer );
-            ret = -1;
-         }
-
-         text->cdata = GC_MALLOC( 96 * sizeof( stbtt_bakedchar ) );
-         if (text->cdata == NULL)
-         {
-            fprintf( stderr, "Error: Unable to allocate memory for cdata. \n" );
-            GC_FREE( fileBuffer );
-            GC_FREE( tempBitmap );
-            ret = -1;
-         }
-
-         stbtt_BakeFontBitmap( fileBuffer, 0, 32.0, tempBitmap, w->width, w->height, 32, 96, text->cdata );
-
-         glGenTextures( 1, &text->texture );
-         glBindTexture( GL_TEXTURE_2D, text->texture );
-         glTexImage2D( GL_TEXTURE_2D, 0, GL_ALPHA, w->width, w->height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tempBitmap );
-         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
-         GC_FREE( tempBitmap );
-         ret = 1;
-         }
-         break;
-
       // sw_Text( x, y, text, size, hc )
       case TEXT_TEXT:
-         {
-         SW_Text *text = ( SW_Text *)args;
-
-         hex_to_Colorf( text->hc );
-         glBindTexture( GL_TEXTURE_2D, text->texture );
-         glBegin( GL_QUADS );
-
-            if( ! text->cdata )
-            {
-               fprintf( stderr, "Error: cdata is null. \n" );
-               ret = -1;
-            }
-
-            for( size_t i = 0; i < strlen( text->text ); i++ )
-            {
-               if( text->text[ i ] >= 32 && text->text[ i ] <= 126 )
-               {
-                  stbtt_aligned_quad q;
-                  stbtt_GetBakedQuad( text->cdata, w->width, w->height, text->text[ i ] - 32, &text->x, &text->y, &q, 1 );
-                  glTexCoord2f( q.s0, q.t0 ); glVertex2f( q.x0 * text->size, q.y0 * text->size );
-                  glTexCoord2f( q.s1, q.t0 ); glVertex2f( q.x1 * text->size, q.y0 * text->size );
-                  glTexCoord2f( q.s1, q.t1 ); glVertex2f( q.x1 * text->size, q.y1 * text->size );
-                  glTexCoord2f( q.s0, q.t1 ); glVertex2f( q.x0 * text->size, q.y1 * text->size );
-               }
-            }
-         glEnd();
-         }
          break;
 
       // sw_TextWidth()
@@ -507,7 +417,7 @@ int text_functions( iText type, void *args )
 }
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
-int glfw_functions( iGlfw type, void *args )
+int sw_glfw_functions( iGlfw type, void *args )
 {
    int ret = 1;
 
@@ -871,3 +781,21 @@ void sw_Sleep( unsigned int milliseconds )
    nanosleep( &req, NULL );
 }
 
+#include <unistd.h>
+bool isPointerValid( void *ptr )
+{
+   if( ptr == NULL )
+   {
+      fprintf( stderr, "The pointer is not valid, it points to NULL. \n" );
+      return F;
+   }
+
+   if( access( ptr, F_OK ) != 0 )
+   {
+      fprintf( stderr, "The pointer is not valid, it does not point to a valid memory location. \n" );
+      return F;
+   }
+
+   fprintf( stderr, "The pointer is valid and points to a valid memory location. \n" );
+   return T;
+}

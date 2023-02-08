@@ -6,6 +6,7 @@
 #define SEAWOLF_H_
 
 #include <assert.h>
+#include <errno.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -17,8 +18,6 @@
 #include <gc/gc.h>
 
 #include <GLFW/glfw3.h>
-
-#include <stb_truetype.h>
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 // tokens
@@ -291,18 +290,6 @@ typedef struct _SW_FillEllipse
    uint32_t hc;
 } SW_FillEllipse;
 
-typedef struct _SW_Text
-{
-   float x;
-   float y;
-   char *text;
-   float size;
-   const char *filePath;
-   uint32_t texture;
-   stbtt_bakedchar *cdata;
-   uint32_t hc;
-} SW_Text;
-
 typedef struct _SeaWolf
 {
    GLFWwindow      *window;      // handle of the created window
@@ -336,11 +323,11 @@ typedef struct _SeaWolf
 bool sw_CreateWindow( int width, int height, const char *title );
 bool sw_MainLoop();
 bool sw_CloseWindow();
-void begin_drawing();
-void end_drawing();
-int opengl_functions( iShape type, void *args );
-int text_functions( iText type, void *args );
-int glfw_functions( iGlfw type, void *args );
+void sw_begin_drawing();
+void sw_end_drawing();
+int sw_opengl_functions( iShape type, void *args );
+int sw_text_functions( iText type, void *args );
+int sw_glfw_functions( iGlfw type, void *args );
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 /*                                Date & Time                                */
 const char *sw_CDate();
@@ -361,6 +348,7 @@ bool sw_IsMouseInRect( double rectX1, double rectY1, double rectWidth, double re
 bool sw_IsMouseInRoundedRect( double rectX1, double rectY1, double rectWidth, double rectHeight, double radius, double cursorX, double cursorY );
 bool sw_IsMouseInTriangle( double x1, double y1, double x2, double y2, double x3, double y3, double cursorX, double cursorY );
 
+bool isPointerValid( void *ptr );
 //---
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 // macros
@@ -369,85 +357,83 @@ bool sw_IsMouseInTriangle( double x1, double y1, double x2, double y2, double x3
 #define UNUSED( n ) ( ( void )( n ) )
 #define LEN( n ) ( sizeof( n ) / sizeof( n )[ 0 ] )
 
-#define sw_Begin() do { begin_drawing()
-#define sw_End() end_drawing(); } while( 0 )
+#define sw_Begin() do { sw_begin_drawing()
+#define sw_End() sw_end_drawing(); } while( 0 )
 //---
 #define sw_Background( hc ) \
 do { \
    SW_Color background = { hc }; \
-   opengl_functions( OPENGL_BACKGROUND, &background ); \
+   sw_opengl_functions( OPENGL_BACKGROUND, &background ); \
 } while( 0 )
 
 #define sw_Point( x, y, hc ) \
 do { \
    SW_Point point = { x, y, 0, hc }; \
-   opengl_functions( OPENGL_POINT, &point ); \
+   sw_opengl_functions( OPENGL_POINT, &point ); \
 } while( 0 )
 
 #define sw_PointSize( x, y, size, hc ) \
 do { \
    SW_Point point = { x, y, size, hc }; \
-   opengl_functions( OPENGL_POINT, &point ); \
+   sw_opengl_functions( OPENGL_POINT, &point ); \
 } while( 0 )
 
 #define sw_Lines( x1, y1, x2, y2, hc ) \
 do { \
    SW_Lines lines = { x1, y1, x2, y2, hc }; \
-   opengl_functions( OPENGL_LINES, &lines ); \
+   sw_opengl_functions( OPENGL_LINES, &lines ); \
 } while( 0 )
 
 #define sw_Rect( x1, y1, x2, y2, hc ) \
 do { \
    SW_Rect rect = { x1, y1, x2, y2, hc }; \
-   opengl_functions( OPENGL_RECT, &rect ); \
+   sw_opengl_functions( OPENGL_RECT, &rect ); \
 } while( 0 )
 
 #define sw_FillRect( x1, y1, x2, y2, hc ) \
 do { \
    SW_FillRect fillrect = { x1, y1, x2, y2, hc }; \
-   opengl_functions( OPENGL_FILLRECT, &fillrect ); \
+   sw_opengl_functions( OPENGL_FILLRECT, &fillrect ); \
 } while( 0 )
 
 #define sw_Triangle( x1, y1, x2, y2, x3, y3, hc ) \
 do { \
    SW_Triangle triangle = { x1, y1, x2, y2, x3, y3, hc }; \
-   opengl_functions( OPENGL_TRIANGLE, &triangle ); \
+   sw_opengl_functions( OPENGL_TRIANGLE, &triangle ); \
 } while( 0 )
 
 #define sw_FillTriangle( x1, y1, x2, y2, x3, y3, hc ) \
 do { \
    SW_FillTriangle filltriangle = { x1, y1, x2, y2, x3, y3, hc }; \
-   opengl_functions( OPENGL_FILLTRIANGLE, &filltriangle ); \
+   sw_opengl_functions( OPENGL_FILLTRIANGLE, &filltriangle ); \
 } while( 0 )
 
 #define sw_Circle( x, y, radius, hc ) \
 do { \
    SW_Circle circle = { x, y, radius, hc }; \
-   opengl_functions( OPENGL_CIRCLE, &circle ); \
+   sw_opengl_functions( OPENGL_CIRCLE, &circle ); \
 } while( 0 )
 
 #define sw_FillCircle( x, y, radius, hc ) \
 do { \
    SW_FillCircle fillcircle = { x, y, radius, hc }; \
-   opengl_functions( OPENGL_FILLCIRCLE, &fillcircle ); \
+   sw_opengl_functions( OPENGL_FILLCIRCLE, &fillcircle ); \
 } while( 0 )
 
 #define sw_Ellipse( x, y, radius, rotation, hc ) \
 do { \
    SW_Ellipse ellipse = { x, y, radius, rotation, hc }; \
-   opengl_functions( OPENGL_ELLIPSE, &ellipse ); \
+   sw_opengl_functions( OPENGL_ELLIPSE, &ellipse ); \
 } while( 0 )
 
 #define sw_FillEllipse( x, y, radius, rotation, hc ) \
 do { \
    SW_FillEllipse fillellipse = { x, y, radius, rotation, hc }; \
-   opengl_functions( OPENGL_FILLELLIPSE, &fillellipse ); \
+   sw_opengl_functions( OPENGL_FILLELLIPSE, &fillellipse ); \
 } while( 0 )
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 //--- Text
-
-//TODO:
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 //--- GLFW
@@ -455,31 +441,31 @@ do { \
 #define sw_SetWinOpacity( opacity ) \
 ({ \
    float set_win_opacity = opacity; \
-   glfw_functions( GLFW_SET_WIN_OPACITY, &set_win_opacity ); \
+   sw_glfw_functions( GLFW_SET_WIN_OPACITY, &set_win_opacity ); \
 })
 
 #define sw_GetKey( key ) \
 ({ \
    int get_key = key; \
-   glfw_functions( GLFW_GET_KEY, &get_key ); \
+   sw_glfw_functions( GLFW_GET_KEY, &get_key ); \
 })
 
 #define sw_GetMouseButton( button ) \
 ({ \
    int get_mousebutton = button; \
-   glfw_functions( GLFW_GET_MOUSEBUTTON, &get_mousebutton ); \
+   sw_glfw_functions( GLFW_GET_MOUSEBUTTON, &get_mousebutton ); \
 })
 
-#define sw_WinWidth()     glfw_functions( GLFW_WIN_WIDTH, NULL )
-#define sw_WinHeight()    glfw_functions( GLFW_WIN_HEIGHT, NULL )
-#define sw_WinMaximized() glfw_functions( GLFW_WIN_MAXIMIZED, NULL )
-#define sw_PollEvents()   glfw_functions( GLFW_POLLEVENTS, NULL )
-#define sw_WaitEvents()   glfw_functions( GLFW_WAITEVENTS, NULL )
+#define sw_WinWidth()     sw_glfw_functions( GLFW_WIN_WIDTH, NULL )
+#define sw_WinHeight()    sw_glfw_functions( GLFW_WIN_HEIGHT, NULL )
+#define sw_WinMaximized() sw_glfw_functions( GLFW_WIN_MAXIMIZED, NULL )
+#define sw_PollEvents()   sw_glfw_functions( GLFW_POLLEVENTS, NULL )
+#define sw_WaitEvents()   sw_glfw_functions( GLFW_WAITEVENTS, NULL )
 
 #define sw_WaitEventsTimeout( timeout ) \
 ({ \
    double events_timeout = timeout; \
-   glfw_functions( GLFW_WAITEVENTSTIMEOUT, &events_timeout ); \
+   sw_glfw_functions( GLFW_WAITEVENTSTIMEOUT, &events_timeout ); \
 })
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
