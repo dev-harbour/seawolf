@@ -149,6 +149,10 @@
 
 #define KEY_LAST               KEY_MENU
 
+#define ENCODING               65535
+#define BITMAP_WIDTH           9
+#define BITMAP_HEIGHT          18
+
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 // types
 typedef enum iShape
@@ -326,7 +330,6 @@ bool sw_CloseWindow();
 void sw_begin_drawing();
 void sw_end_drawing();
 int sw_opengl_functions( iShape type, void *args );
-int sw_text_functions( iText type, void *args );
 int sw_glfw_functions( iGlfw type, void *args );
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 /*                                Date & Time                                */
@@ -340,6 +343,11 @@ const char *sw_MemoRead( const char *filePath );
 uint32_t sw_RAt( const char *search, const char *target );
 const char *sw_Right( const char *str, int count );
 const char *sw_SubStr( const char *str, int start, int count );
+/* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+/*                                   Text                                    */
+int sw_LoadFont_9x18_BDF( const char *filePath );
+void sw_DrawText_9x18( float x, float y, const char *text );
+int sw_text_functions( iText type, void *args );
 
 bool sw_IsMouseInCircle( double circleX, double circleY, double radius, double cursorX, double cursorY );
 bool sw_IsMouseInEllipse( double ellipseX, double ellipseY, double radiusX, double radiusY, double cursorX, double cursorY );

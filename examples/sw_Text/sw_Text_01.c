@@ -8,15 +8,7 @@ int main( void )
 {
    sw_CreateWindow( 830, 450, "sw_Text" );
 
-   SW_Text txt;
-   txt.x = 10.0f;
-   txt.y = 10.0f;
-   txt.text = "This is a simple test!";
-   txt.size = 1.0f;
-   txt.filePath = "../../font/freemono/FreeMono.ttf";
-   txt.hc = 0xff0000;
-
-   text_functions( TEXT_OPEN_FONT, &txt );
+   sw_LoadFont_9x18_BDF( "../../font/9x18.bdf" );
 
    while( ! sw_MainLoop() && ! sw_GetKey( KEY_ESCAPE ) )
    {
@@ -24,7 +16,7 @@ int main( void )
 
          sw_Background( 0x323232 );
 
-         text_functions( TEXT_TEXT, &txt );
+         sw_DrawText_9x18( 100, 100, "1234567890" );
 
       sw_End();
       sw_PollEvents();
