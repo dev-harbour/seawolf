@@ -150,8 +150,8 @@
 #define KEY_LAST               KEY_MENU
 
 #define ENCODING               65535
-#define BITMAP_WIDTH           9
-#define BITMAP_HEIGHT          18
+#define BITMAP_WIDTH_9x18      9
+#define BITMAP_HEIGHT_9x18     18
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 // types
@@ -173,9 +173,9 @@ typedef enum iShape
 typedef enum iText
 {
    TEXT_OPEN_FONT,
-   TEXT_TEXT,
-   TEXT_WIDTH,
-   TEXT_HEIGHT,
+   DRAW_TEXT_9x18,
+   TEXT_WIDTH_9x18,
+   TEXT_HEIGHT_9x18,
 } iText;
 
 typedef enum iGlfw
@@ -294,6 +294,15 @@ typedef struct _SW_FillEllipse
    uint32_t hc;
 } SW_FillEllipse;
 
+typedef struct _Text_9x18
+{
+   float x;
+   float y;
+   const char *text;
+   uint32_t background;
+   uint32_t foreground;
+} Text_9x18;
+
 typedef struct _SeaWolf
 {
    GLFWwindow      *window;      // handle of the created window
@@ -346,7 +355,6 @@ const char *sw_SubStr( const char *str, int start, int count );
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 /*                                   Text                                    */
 int sw_LoadFont_9x18_BDF( const char *filePath );
-void sw_DrawText_9x18( float x, float y, const char *text );
 int sw_text_functions( iText type, void *args );
 
 bool sw_IsMouseInCircle( double circleX, double circleY, double radius, double cursorX, double cursorY );
@@ -442,6 +450,29 @@ do { \
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 //--- Text
+
+#define sw_DrawText9x18( x, y, text, background, foreground ) \
+do { \
+   Text_9x18 text_9x18 = { x, y, text, background, foreground }; \
+   sw_text_functions( DRAW_TEXT_9x18, &text_9x18 ); \
+} while( 0 )
+
+#define sw_TextWidth9x18( text ) \
+({ \
+   Text_9x18 text_9x18 = { 0, 0, text, 0, 0 }; \
+   sw_text_functions( TEXT_WIDTH_9x18, &text_9x18 ); \
+})
+
+/*
+#define sw_TextWidth9x18( text ) \
+({ \
+   Text_9x18 text_9x18 = { 0, 0, text, 0, 0 }; \
+   sw_text_functions( TEXT_WIDTH_9x18, &text_9x18 ); \
+})
+*/
+
+#define sw_TextHeight9x18() sw_text_functions( TEXT_HEIGHT_9x18, NULL )
+
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 //--- GLFW

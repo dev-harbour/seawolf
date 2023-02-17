@@ -5,6 +5,8 @@
 #include "seawolf.h"
 
 static SeaWolf *w = NULL;
+unsigned int font[ ENCODING ][ BITMAP_HEIGHT_9x18 ];
+
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 // static functions
 static void cursor_position_callback( GLFWwindow *window, double x, double y )
@@ -105,6 +107,41 @@ static void hex_to_Colorf( uint32_t hexColor )
    else
    {
       printf( "Invalid hex value passed \n" );
+   }
+}
+
+static void draw_point( float x, float y )
+{
+   glPointSize( 1.0 );
+   glBegin( GL_POINTS );
+   glVertex2f( x, y + 1 - BITMAP_HEIGHT_9x18 );
+   glEnd();
+}
+
+static void draw_char( float x, float y, unsigned int c, uint32_t background, uint32_t foreground )
+{
+   unsigned int *bitmap = font[ c ];
+
+   hex_to_Colorf( background );
+   glBegin( GL_QUADS );
+   glVertex2f( x - 1, y + BITMAP_HEIGHT_9x18 - 18 );
+   glVertex2f( x + BITMAP_WIDTH_9x18, y + BITMAP_HEIGHT_9x18 - 18 );
+   glVertex2f( x + BITMAP_WIDTH_9x18, y - 18 );
+   glVertex2f( x - 1, y - 18 );
+   glEnd();
+
+   // Draw character
+   hex_to_Colorf( foreground );
+   for( int i = 0; i < BITMAP_HEIGHT_9x18; i++ )
+   {
+      unsigned int value = bitmap[ i ];
+      for( int j = 0; j < BITMAP_WIDTH_9x18; j++ )
+      {
+         if( value & ( 1 << ( 15 - j ) ) )
+         {
+            draw_point( x + j, y + i );
+         }
+      }
    }
 }
 
@@ -391,14 +428,11 @@ int sw_opengl_functions( iShape type, void *args )
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 /*                                   Text                                    */
-
-unsigned int font[ ENCODING ][ BITMAP_HEIGHT ];
-
 int sw_LoadFont_9x18_BDF( const char *file_path )
 {
    char line[ 512 ];
    unsigned int encoding = 0, bitmap_index = 0;
-   unsigned int bitmap[ BITMAP_HEIGHT ];
+   unsigned int bitmap[ BITMAP_HEIGHT_9x18 ];
 
    FILE *file = fopen( file_path, "r" );
    if( file == NULL )
@@ -419,12 +453,12 @@ int sw_LoadFont_9x18_BDF( const char *file_path )
       {
          bitmap_index = 0;
       }
-      else if( bitmap_index < BITMAP_HEIGHT )
+      else if( bitmap_index < BITMAP_HEIGHT_9x18 )
       {
          sscanf( line, "%x", &bitmap[ bitmap_index++ ] );
-         if( bitmap_index == BITMAP_HEIGHT )
+         if( bitmap_index == BITMAP_HEIGHT_9x18 )
          {
-            for( int i = 0; i < BITMAP_HEIGHT; i++ )
+            for( int i = 0; i < BITMAP_HEIGHT_9x18; i++ )
             {
                font[ encoding ][ i ] = bitmap[ i ];
             }
@@ -436,92 +470,66 @@ int sw_LoadFont_9x18_BDF( const char *file_path )
    return 0;
 }
 
-static void draw_point( float x, float y )
-{
-   // only test
-   glColor3f( 1.0, 1.0, 1.0 );
-   glPointSize( 1.0 );
-   glBegin( GL_POINTS );
-   glVertex2f( x, y );
-   glEnd();
-}
-
-static void draw_char( unsigned int c, float x, float y )
-{
-   unsigned int *bitmap = font[ c ];
-
-   for( int i = 0; i < BITMAP_HEIGHT; i++ )
-   {
-      unsigned int value = bitmap[ i ];
-      for( int j = 0; j < BITMAP_WIDTH; j++ )
-      {
-         if( value & ( 1 << ( 15 - j ) ) )
-         {
-            draw_point( x + j, y + i );
-         }
-      }
-   }
-}
-
-static size_t encode_utf8( char* s, unsigned int ch )
-{
-   size_t count = 0;
-
-   if( ch < 0x80 )
-      s[ count++ ] = ( char ) ch;
-   else if( ch < 0x800 )
-   {
-      s[ count++ ] = ( ch >> 6 ) | 0xc0;
-      s[ count++ ] = ( ch & 0x3f ) | 0x80;
-   }
-   else if( ch < 0x10000 )
-   {
-      s[ count++ ] = ( ch >> 12 ) | 0xe0;
-      s[ count++ ] = ( ( ch >> 6 ) & 0x3f ) | 0x80;
-      s[ count++ ] = ( ch & 0x3f ) | 0x80;
-   }
-   else if( ch < 0x110000 )
-   {
-      s[ count++ ] = ( ch >> 18 ) | 0xf0;
-      s[ count++ ] = ( ( ch >> 12 ) & 0x3f ) | 0x80;
-      s[ count++ ] = ( ( ch >> 6 ) & 0x3f ) | 0x80;
-      s[ count++ ] = ( ch & 0x3f ) | 0x80;
-   }
-
-   return count;
-}
-
-void sw_DrawText_9x18( float x, float y, const char *text )
-{
-   y += BITMAP_HEIGHT;
-
-   for( const char *c = text; *c; c++ )
-   {
-      char utf8[ 5 ] = "";
-      int len = encode_utf8( utf8, ( unsigned int ) *c );
-      utf8[ len ] = '\0';
-      draw_char( utf8[ 0 ], x, y );
-      x += BITMAP_WIDTH + 1;
-   }
-}
-
 int sw_text_functions( iText type, void *args )
 {
    int ret = 1;
 
-   UNUSED( args );
    switch( type )
    {
-      // sw_Text( x, y, text, size, hc )
-      case TEXT_TEXT:
+      // sw_DrawText9x18( x, y, text, background, foreground )
+      case DRAW_TEXT_9x18:
+      {
+      Text_9x18 *text9x18 = ( Text_9x18 *)args;
+
+      unsigned int codepoint;
+      int bytes;
+      unsigned char ch;
+      int i;
+
+      // Draw text
+      text9x18->y += BITMAP_HEIGHT_9x18;
+
+         while( *text9x18->text != '\0' )
+         {
+            bytes = 0;
+            ch = ( unsigned char )( *text9x18->text++ );
+            if( ch <= 0x7F )
+            {
+               codepoint = ch;
+               bytes = 1;
+            }
+            else if( ch <= 0xDF )
+            {
+               codepoint = ch & 0x1F;
+               bytes = 2;
+            }
+            else if( ch <= 0xEF )
+            {
+               codepoint = ch & 0x0F;
+               bytes = 3;
+            } else
+            {
+               codepoint = ch & 0x07;
+               bytes = 4;
+            }
+            for( i = 1; i < bytes; i++ )
+            {
+               ch = ( unsigned char )( *text9x18->text++ );
+               codepoint = ( codepoint << 6 ) | ( ch & 0x3F );
+            }
+
+            draw_char( text9x18->x, text9x18->y, codepoint, text9x18->background, text9x18->foreground );
+            text9x18->x += BITMAP_WIDTH_9x18 + 1;
+         }
+      }
+      break;
+
+      // sw_TextWidth9x18()
+      case TEXT_WIDTH_9x18:
          break;
 
-      // sw_TextWidth()
-      case TEXT_WIDTH:
-         break;
-
-      // sw_TextHeight()
-      case TEXT_HEIGHT:
+      // sw_TextHeight9x18()
+      case TEXT_HEIGHT_9x18:
          break;
 
       default:
