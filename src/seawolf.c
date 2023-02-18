@@ -711,7 +711,7 @@ const char *sw_MemoRead( const char *filePath )
    size_t itemsRead = fread( fileBuffer, 1, fileSize, file );
    if( itemsRead != fileSize )
    {
-      fprintf( stderr, "Error: Only %lld bytes read, expected %lld \n", itemsRead, fileSize );
+      fprintf( stderr, "Error: Only %ld bytes read, expected %ld \n", itemsRead, fileSize );
       fclose( file );
       GC_FREE( fileBuffer );
       return GC_STRDUP( "" );
