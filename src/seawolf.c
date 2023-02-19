@@ -125,8 +125,8 @@ static void draw_char( float x, float y, unsigned int c, uint32_t background, ui
    hex_to_Colorf( background );
    glBegin( GL_QUADS );
    glVertex2f( x - 1, y + BITMAP_HEIGHT_9x18 - 18 );
-   glVertex2f( x + BITMAP_WIDTH_9x18, y + BITMAP_HEIGHT_9x18 - 18 );
-   glVertex2f( x + BITMAP_WIDTH_9x18, y - 18 );
+   glVertex2f( x + BITMAP_WIDTH, y + BITMAP_HEIGHT_9x18 - 18 );
+   glVertex2f( x + BITMAP_WIDTH, y - 18 );
    glVertex2f( x - 1, y - 18 );
    glEnd();
 
@@ -135,7 +135,7 @@ static void draw_char( float x, float y, unsigned int c, uint32_t background, ui
    for( int i = 0; i < BITMAP_HEIGHT_9x18; i++ )
    {
       unsigned int value = bitmap[ i ];
-      for( int j = 0; j < BITMAP_WIDTH_9x18; j++ )
+      for( int j = 0; j < BITMAP_WIDTH; j++ )
       {
          if( value & ( 1 << ( 15 - j ) ) )
          {
@@ -143,6 +143,20 @@ static void draw_char( float x, float y, unsigned int c, uint32_t background, ui
          }
       }
    }
+}
+
+static size_t strlen_utf8( const char* str )
+{
+   size_t len = 0;
+   unsigned char c;
+
+   while( ( c = ( unsigned char ) *str++ ) )
+   {
+      if( ( c & 0xc0 ) != 0x80 )
+         len++;
+   }
+
+   return len;
 }
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
@@ -472,14 +486,14 @@ int sw_LoadFont_9x18_BDF( const char *file_path )
 
 int sw_text_functions( iText type, void *args )
 {
-   int ret = 1;
+   int ret = 0;
 
    switch( type )
    {
-      // sw_DrawText9x18( x, y, text, background, foreground )
-      case DRAW_TEXT_9x18:
+      // ( x, y, text, background, foreground )
+      case DRAW_TEXT_BDF:
       {
-      Text_9x18 *text9x18 = ( Text_9x18 *)args;
+      SW_GlyphBDF *drawtext = ( SW_GlyphBDF *)args;
 
       unsigned int codepoint;
       int bytes;
@@ -487,12 +501,12 @@ int sw_text_functions( iText type, void *args )
       int i;
 
       // Draw text
-      text9x18->y += BITMAP_HEIGHT_9x18;
+      drawtext->y += BITMAP_HEIGHT_9x18;
 
-         while( *text9x18->text != '\0' )
+         while( *drawtext->text != '\0' )
          {
             bytes = 0;
-            ch = ( unsigned char )( *text9x18->text++ );
+            ch = ( unsigned char )( *drawtext->text++ );
             if( ch <= 0x7F )
             {
                codepoint = ch;
@@ -514,23 +528,38 @@ int sw_text_functions( iText type, void *args )
             }
             for( i = 1; i < bytes; i++ )
             {
-               ch = ( unsigned char )( *text9x18->text++ );
+               ch = ( unsigned char )( *drawtext->text++ );
                codepoint = ( codepoint << 6 ) | ( ch & 0x3F );
             }
 
-            draw_char( text9x18->x, text9x18->y, codepoint, text9x18->background, text9x18->foreground );
-            text9x18->x += BITMAP_WIDTH_9x18 + 1;
+            draw_char( drawtext->x, drawtext->y, codepoint, drawtext->background, drawtext->foreground );
+            drawtext->x += BITMAP_WIDTH + 1;
          }
       }
       break;
 
-      // sw_TextWidth9x18()
-      case TEXT_WIDTH_9x18:
-         break;
+      // sw_TextWidthBDF()
+      case TEXT_WIDTH_BDF:
+      {
+      SW_GlyphBDF *textwidth = ( SW_GlyphBDF *)args;
 
-      // sw_TextHeight9x18()
-      case TEXT_HEIGHT_9x18:
-         break;
+      size_t len = 0;
+      unsigned char c;
+
+         while( ( c = ( unsigned char ) *textwidth->text++ ) )
+         {
+            if( ( c & 0xc0 ) != 0x80 )
+            len++;
+         }
+         ret = len * BITMAP_WIDTH;
+      }
+      break;
+
+      // sw_TextHeightBDF()
+      case TEXT_HEIGHT_BDF:
+
+         ret = BITMAP_HEIGHT_9x18;
+      break;
 
       default:
          return 0;
@@ -668,7 +697,7 @@ uint32_t sw_At( const char *search, const char *target )
 
 const char *sw_Left( const char *str, int count )
 {
-   int len = strlen( str );
+   int len = strlen_utf8( str );
 
    if( count <= 0 )
    {
@@ -711,7 +740,7 @@ const char *sw_MemoRead( const char *filePath )
    size_t itemsRead = fread( fileBuffer, 1, fileSize, file );
    if( itemsRead != fileSize )
    {
-      fprintf( stderr, "Error: Only %ld bytes read, expected %ld \n", itemsRead, fileSize );
+      fprintf( stderr, "Error: Only %zu bytes read, expected %zu \n", itemsRead, fileSize );
       fclose( file );
       GC_FREE( fileBuffer );
       return GC_STRDUP( "" );
@@ -725,8 +754,8 @@ const char *sw_MemoRead( const char *filePath )
 
 uint32_t sw_RAt( const char *search, const char *target )
 {
-   int targetLen = strlen( target );
-   int searchLen = strlen( search );
+   int targetLen = strlen_utf8( target );
+   int searchLen = strlen_utf8( search );
 
    for( int i = targetLen - searchLen; i >= 0; i-- )
    {
@@ -741,7 +770,7 @@ uint32_t sw_RAt( const char *search, const char *target )
 
 const char *sw_Right( const char *str, int count )
 {
-   int len = strlen( str );
+   int len = strlen_utf8( str );
 
    if( count <= 0 )
    {
@@ -762,7 +791,7 @@ const char *sw_Right( const char *str, int count )
 
 const char *sw_SubStr( const char *str, int start, int count )
 {
-   int nSize = strlen( str );
+   int nSize = strlen_utf8( str );
 
    if( start > 0 )
    {

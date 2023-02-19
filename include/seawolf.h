@@ -150,7 +150,7 @@
 #define KEY_LAST               KEY_MENU
 
 #define ENCODING               65535
-#define BITMAP_WIDTH_9x18      9
+#define BITMAP_WIDTH           9
 #define BITMAP_HEIGHT_9x18     18
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
@@ -172,10 +172,9 @@ typedef enum iShape
 
 typedef enum iText
 {
-   TEXT_OPEN_FONT,
-   DRAW_TEXT_9x18,
-   TEXT_WIDTH_9x18,
-   TEXT_HEIGHT_9x18,
+   DRAW_TEXT_BDF,
+   TEXT_WIDTH_BDF,
+   TEXT_HEIGHT_BDF,
 } iText;
 
 typedef enum iGlfw
@@ -190,7 +189,6 @@ typedef enum iGlfw
    GLFW_WAITEVENTS,
    GLFW_WAITEVENTSTIMEOUT,
 } iGlfw;
-
 
 typedef enum bool
 {
@@ -294,14 +292,14 @@ typedef struct _SW_FillEllipse
    uint32_t hc;
 } SW_FillEllipse;
 
-typedef struct _Text_9x18
+typedef struct _SW_GlyphBDF
 {
    float x;
    float y;
    const char *text;
    uint32_t background;
    uint32_t foreground;
-} Text_9x18;
+} SW_GlyphBDF;
 
 typedef struct _SeaWolf
 {
@@ -451,28 +449,19 @@ do { \
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 //--- Text
 
-#define sw_DrawText9x18( x, y, text, background, foreground ) \
+#define sw_DrawTextBDF( x, y, text, background, foreground ) \
 do { \
-   Text_9x18 text_9x18 = { x, y, text, background, foreground }; \
-   sw_text_functions( DRAW_TEXT_9x18, &text_9x18 ); \
+   SW_GlyphBDF drawtext = { x, y, text, background, foreground }; \
+   sw_text_functions( DRAW_TEXT_BDF, &drawtext ); \
 } while( 0 )
 
-#define sw_TextWidth9x18( text ) \
+#define sw_TextWidthBDF( text ) \
 ({ \
-   Text_9x18 text_9x18 = { 0, 0, text, 0, 0 }; \
-   sw_text_functions( TEXT_WIDTH_9x18, &text_9x18 ); \
+   SW_GlyphBDF textwidth = { 0, 0, text, 0, 0 }; \
+   sw_text_functions( TEXT_WIDTH_BDF, &textwidth ); \
 })
 
-/*
-#define sw_TextWidth9x18( text ) \
-({ \
-   Text_9x18 text_9x18 = { 0, 0, text, 0, 0 }; \
-   sw_text_functions( TEXT_WIDTH_9x18, &text_9x18 ); \
-})
-*/
-
-#define sw_TextHeight9x18() sw_text_functions( TEXT_HEIGHT_9x18, NULL )
-
+#define sw_TextHeightBDF() sw_text_functions( TEXT_HEIGHT_9x18, NULL )
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 //--- GLFW
