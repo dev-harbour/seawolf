@@ -46,7 +46,7 @@ int main( void )
 
             for ( int i = 0; i < num_lines; i++ )
             {
-               sw_DrawText9x18( 36, i * 18, text[ i ], 0x2F3853, 0xf6f6f6 );
+               sw_DrawTextBDF( 36, i * 18, text[ i ], 0x2F3853, 0xf6f6f6 );
             }
 
       sw_End();
