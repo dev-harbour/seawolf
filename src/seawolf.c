@@ -5,7 +5,7 @@
 #include "seawolf.h"
 
 static SeaWolf *w = NULL;
-unsigned int font[ ENCODING ][ BITMAP_HEIGHT_9x18 ];
+unsigned int font[ ENCODING ][ BITMAP_HEIGHT ];
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 // static functions
@@ -114,7 +114,7 @@ static void draw_point( float x, float y )
 {
    glPointSize( 1.0 );
    glBegin( GL_POINTS );
-   glVertex2f( x, y + 1 - BITMAP_HEIGHT_9x18 );
+   glVertex2f( x, y + 1 - BITMAP_HEIGHT );
    glEnd();
 }
 
@@ -124,15 +124,15 @@ static void draw_char( float x, float y, unsigned int c, uint32_t background, ui
 
    hex_to_Colorf( background );
    glBegin( GL_QUADS );
-   glVertex2f( x - 1, y + BITMAP_HEIGHT_9x18 - 18 );
-   glVertex2f( x + BITMAP_WIDTH, y + BITMAP_HEIGHT_9x18 - 18 );
+   glVertex2f( x - 1, y + BITMAP_HEIGHT - 18 );
+   glVertex2f( x + BITMAP_WIDTH, y + BITMAP_HEIGHT - 18 );
    glVertex2f( x + BITMAP_WIDTH, y - 18 );
    glVertex2f( x - 1, y - 18 );
    glEnd();
 
    // Draw character
    hex_to_Colorf( foreground );
-   for( int i = 0; i < BITMAP_HEIGHT_9x18; i++ )
+   for( int i = 0; i < BITMAP_HEIGHT; i++ )
    {
       unsigned int value = bitmap[ i ];
       for( int j = 0; j < BITMAP_WIDTH; j++ )
@@ -189,6 +189,7 @@ bool sw_CreateWindow( int width, int height, const char *title )
    }
    glfwMakeContextCurrent( w->window );
    glfwSetWindowUserPointer( w->window, w );
+   glfwSwapInterval( 1 );
 
    glfwSetCursorPosCallback( w->window, cursor_position_callback );
    glfwSetKeyCallback( w->window, key_callback );
@@ -446,7 +447,7 @@ int sw_LoadFont_9x18_BDF( const char *file_path )
 {
    char line[ 512 ];
    unsigned int encoding = 0, bitmap_index = 0;
-   unsigned int bitmap[ BITMAP_HEIGHT_9x18 ];
+   unsigned int bitmap[ BITMAP_HEIGHT ];
 
    FILE *file = fopen( file_path, "r" );
    if( file == NULL )
@@ -467,12 +468,12 @@ int sw_LoadFont_9x18_BDF( const char *file_path )
       {
          bitmap_index = 0;
       }
-      else if( bitmap_index < BITMAP_HEIGHT_9x18 )
+      else if( bitmap_index < BITMAP_HEIGHT )
       {
          sscanf( line, "%x", &bitmap[ bitmap_index++ ] );
-         if( bitmap_index == BITMAP_HEIGHT_9x18 )
+         if( bitmap_index == BITMAP_HEIGHT )
          {
-            for( int i = 0; i < BITMAP_HEIGHT_9x18; i++ )
+            for( int i = 0; i < BITMAP_HEIGHT; i++ )
             {
                font[ encoding ][ i ] = bitmap[ i ];
             }
@@ -486,79 +487,92 @@ int sw_LoadFont_9x18_BDF( const char *file_path )
 
 int sw_text_functions( iText type, void *args )
 {
-   int ret = 0;
+   size_t ret = 0;
 
    switch( type )
    {
-      // ( x, y, text, background, foreground )
+      // sw_DrawTextBDF( x, y, text, background, foreground )
       case DRAW_TEXT_BDF:
-      {
-      SW_GlyphBDF *drawtext = ( SW_GlyphBDF *)args;
-
-      unsigned int codepoint;
-      int bytes;
-      unsigned char ch;
-      int i;
-
-      // Draw text
-      drawtext->y += BITMAP_HEIGHT_9x18;
-
-         while( *drawtext->text != '\0' )
          {
-            bytes = 0;
-            ch = ( unsigned char )( *drawtext->text++ );
-            if( ch <= 0x7F )
-            {
-               codepoint = ch;
-               bytes = 1;
-            }
-            else if( ch <= 0xDF )
-            {
-               codepoint = ch & 0x1F;
-               bytes = 2;
-            }
-            else if( ch <= 0xEF )
-            {
-               codepoint = ch & 0x0F;
-               bytes = 3;
-            } else
-            {
-               codepoint = ch & 0x07;
-               bytes = 4;
-            }
-            for( i = 1; i < bytes; i++ )
-            {
-               ch = ( unsigned char )( *drawtext->text++ );
-               codepoint = ( codepoint << 6 ) | ( ch & 0x3F );
-            }
+         SW_GlyphBDF *drawtext = ( SW_GlyphBDF *)args;
 
-            draw_char( drawtext->x, drawtext->y, codepoint, drawtext->background, drawtext->foreground );
-            drawtext->x += BITMAP_WIDTH + 1;
+         unsigned int codepoint;
+         int bytes;
+         unsigned char ch;
+         int i;
+
+         // Draw text
+         drawtext->y += BITMAP_HEIGHT;
+
+            while( *drawtext->text != '\0' )
+            {
+               bytes = 0;
+               ch = ( unsigned char )( *drawtext->text++ );
+               if( ch <= 0x7F )
+               {
+                  codepoint = ch;
+                  bytes = 1;
+               }
+               else if( ch <= 0xDF )
+               {
+                  codepoint = ch & 0x1F;
+                  bytes = 2;
+               }
+               else if( ch <= 0xEF )
+               {
+                  codepoint = ch & 0x0F;
+                  bytes = 3;
+               } else
+               {
+                  codepoint = ch & 0x07;
+                  bytes = 4;
+               }
+               for( i = 1; i < bytes; i++ )
+               {
+                  ch = ( unsigned char )( *drawtext->text++ );
+                  codepoint = ( codepoint << 6 ) | ( ch & 0x3F );
+               }
+
+               draw_char( drawtext->x, drawtext->y, codepoint, drawtext->background, drawtext->foreground );
+               drawtext->x += BITMAP_WIDTH + 1;
+            }
          }
-      }
-      break;
+         break;
+
+      // sw_DrawTextCenterBDF( x, y, text, background, foreground )
+      case DRAW_TEXT_CENTER_BDF:
+         {
+         SW_GlyphBDF *drawtextcenter = ( SW_GlyphBDF * )args;
+
+         int textWidth = sw_text_functions( TEXT_WIDTH_BDF, &( SW_GlyphBDF ){ 0, 0, drawtextcenter->text, 0, 0 } );
+         int centeredX = ( drawtextcenter->x - textWidth ) / 2;
+
+         sw_text_functions( DRAW_TEXT_BDF, &( SW_GlyphBDF ){ centeredX, drawtextcenter->y, drawtextcenter->text, drawtextcenter->background, drawtextcenter->foreground } );
+         }
+         break;
 
       // sw_TextWidthBDF()
       case TEXT_WIDTH_BDF:
-      {
-      SW_GlyphBDF *textwidth = ( SW_GlyphBDF *)args;
-
-      size_t len = 0;
-      unsigned char c;
-
-         while( ( c = ( unsigned char ) *textwidth->text++ ) )
          {
-            if( ( c & 0xc0 ) != 0x80 )
-            len++;
+         SW_GlyphBDF *textwidth = ( SW_GlyphBDF *)args;
+
+         size_t len = 0;
+         unsigned char c;
+
+            while( ( c = ( unsigned char ) *textwidth->text++ ) )
+            {
+               if( ( c & 0xc0 ) != 0x80 )
+               len++;
+            }
+            ret = len * BITMAP_WIDTH;
          }
-         ret = len * BITMAP_WIDTH;
-      }
-      break;
+         break;
 
       // sw_TextHeightBDF()
       case TEXT_HEIGHT_BDF:
-
-         ret = BITMAP_HEIGHT_9x18;
+         {
+         ret = BITMAP_HEIGHT;
+         }
       break;
 
       default:

@@ -151,7 +151,7 @@
 
 #define ENCODING               65535
 #define BITMAP_WIDTH           9
-#define BITMAP_HEIGHT_9x18     18
+#define BITMAP_HEIGHT          18
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 // types
@@ -173,6 +173,7 @@ typedef enum iShape
 typedef enum iText
 {
    DRAW_TEXT_BDF,
+   DRAW_TEXT_CENTER_BDF,
    TEXT_WIDTH_BDF,
    TEXT_HEIGHT_BDF,
 } iText;
@@ -453,6 +454,12 @@ do { \
 do { \
    SW_GlyphBDF drawtext = { x, y, text, background, foreground }; \
    sw_text_functions( DRAW_TEXT_BDF, &drawtext ); \
+} while( 0 )
+
+#define sw_DrawTextCenterBDF( x, y, text, background, foreground ) \
+do { \
+   SW_GlyphBDF drawtextcenter = { x, y, text, background, foreground }; \
+   sw_text_functions( DRAW_TEXT_CENTER_BDF, &drawtextcenter ); \
 } while( 0 )
 
 #define sw_TextWidthBDF( text ) \
