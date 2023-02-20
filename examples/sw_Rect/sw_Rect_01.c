@@ -1,3 +1,7 @@
+/*
+ *
+ */
+
 #include "seawolf.h"
 
 int main( void )
@@ -27,7 +31,7 @@ int main( void )
          }
 
       sw_End();
-      sw_PollEvents();
+      sw_WaitEvents();
    }
 
    sw_CloseWindow();
