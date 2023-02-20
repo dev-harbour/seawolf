@@ -6,7 +6,6 @@
 
 int main( void )
 {
-   const char *text = "sw_Lines";
    int x1, y1, x2, y2;
    uint8_t i;
    int n = 46, radius = 100;
@@ -14,7 +13,7 @@ int main( void )
    uint8_t red, green, blue;
    uint32_t color;
 
-   sw_CreateWindow( 830, 450, text );
+   sw_CreateWindow( 830, 450, "sw_Line" );
 
    while( ! sw_MainLoop() && ! sw_GetKey( KEY_ESCAPE ) )
    {
@@ -38,7 +37,7 @@ int main( void )
 
             color = sw_RGBToHex( red, green, blue );
 
-            sw_Lines( x1, y1, x2, y2, color );
+            sw_Line( x1, y1, x2, y2, color );
          }
 
       sw_End();

@@ -26,7 +26,7 @@ int main( void )
          {
             x1 = sin(        i * M_PI / n ) * radius * 2 + x2;
             y1 = cos( M_PI + i * M_PI / n ) * radius * 2 + y2;
-            sw_Lines( x1, y1, x2, y2, 0xfecb0b );
+            sw_Line( x1, y1, x2, y2, 0xfecb0b );
          }
 
       sw_End();

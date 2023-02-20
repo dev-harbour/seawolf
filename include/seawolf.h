@@ -160,7 +160,7 @@ typedef enum iShape
    OPENGL_BACKGROUND,
    OPENGL_RGBTOHEX,
    OPENGL_POINT,
-   OPENGL_LINES,
+   OPENGL_LINE,
    OPENGL_RECT,
    OPENGL_FILLRECT,
    OPENGL_TRIANGLE,
@@ -218,14 +218,14 @@ typedef struct _SW_Point
    uint32_t hc;
 } SW_Point;
 
-typedef struct _SW_Lines
+typedef struct _SW_Line
 {
    float x1;
    float y1;
    float x2;
    float y2;
    uint32_t hc;
-} SW_Lines;
+} SW_Line;
 
 typedef struct _SW_Rect
 {
@@ -407,10 +407,10 @@ do { \
    sw_opengl_functions( OPENGL_POINT, &point ); \
 } while( 0 )
 
-#define sw_Lines( x1, y1, x2, y2, hc ) \
+#define sw_Line( x1, y1, x2, y2, hc ) \
 do { \
-   SW_Lines lines = { x1, y1, x2, y2, hc }; \
-   sw_opengl_functions( OPENGL_LINES, &lines ); \
+   SW_Line line = { x1, y1, x2, y2, hc }; \
+   sw_opengl_functions( OPENGL_LINE, &line ); \
 } while( 0 )
 
 #define sw_Rect( x1, y1, x2, y2, hc ) \

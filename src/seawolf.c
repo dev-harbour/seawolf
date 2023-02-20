@@ -304,15 +304,15 @@ int sw_opengl_functions( iShape type, void *args )
       }
       break;
 
-   // sw_Lines( x1, y1, x2, y2, hc )
-   case OPENGL_LINES:
+   // sw_Line( x1, y1, x2, y2, hc )
+   case OPENGL_LINE:
       {
-      SW_Lines *lines = ( SW_Lines *)args;
+      SW_Line *line = ( SW_Line *)args;
 
-      hex_to_Colorf( lines->hc );
+      hex_to_Colorf( line->hc );
       glBegin( GL_LINES );
-      glVertex2f( lines->x1, lines->y1 );
-      glVertex2f( lines->x2, lines->y2 );
+      glVertex2f( line->x1, line->y1 );
+      glVertex2f( line->x2, line->y2 );
       glEnd();
       }
       break;

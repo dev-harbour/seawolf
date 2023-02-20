@@ -17,7 +17,7 @@ int main( void )
          w = sw_WinWidth() / 2;
          h = sw_WinHeight() / 2;
 
-         sw_Background( 0x006994 );
+         sw_Background( 0x0c1215 );
 
          for( i = 0; i < 44; i++ )
          {
