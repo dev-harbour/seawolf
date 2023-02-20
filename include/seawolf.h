@@ -158,6 +158,7 @@
 typedef enum iShape
 {
    OPENGL_BACKGROUND,
+   OPENGL_RGBTOHEX,
    OPENGL_POINT,
    OPENGL_LINES,
    OPENGL_RECT,
@@ -201,6 +202,13 @@ typedef struct _SW_Color
 {
    uint32_t color;
 } SW_Color;
+
+typedef struct _SW_RGBToHex
+{
+   uint8_t r;
+   uint8_t g;
+   uint8_t b;
+} SW_RGBToHex;
 
 typedef struct _SW_Point
 {
@@ -381,6 +389,12 @@ do { \
    sw_opengl_functions( OPENGL_BACKGROUND, &background ); \
 } while( 0 )
 
+#define sw_RGBToHex( r, g, b ) \
+({ \
+   SW_RGBToHex rgbtohex = { r, g, b }; \
+   sw_opengl_functions( OPENGL_RGBTOHEX, &rgbtohex ); \
+})
+
 #define sw_Point( x, y, hc ) \
 do { \
    SW_Point point = { x, y, 0, hc }; \
@@ -504,6 +518,7 @@ do { \
 })
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+unsigned int sw_GetTicks( void );
 double sw_GetTime( void );
 void sw_Sleep( unsigned int milliseconds );
 #endif /* End SEAWOLF_H_ */

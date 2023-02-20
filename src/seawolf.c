@@ -281,6 +281,15 @@ int sw_opengl_functions( iShape type, void *args )
       }
       break;
 
+   // sw_RGBToHex( r, g, b )
+   case OPENGL_RGBTOHEX:
+      {
+      SW_RGBToHex *rgbtohex = ( SW_RGBToHex *)args;
+
+      ret = ( ( rgbtohex->r << 16 ) | ( rgbtohex->g << 8 ) | ( rgbtohex->b ) );
+      }
+      break;
+
    // sw_Point( x, y, hc )
    // sw_PointSize( x, y, size, hc )
    case OPENGL_POINT:
@@ -918,6 +927,13 @@ bool sw_IsMouseInTriangle( double x1, double y1, double x2, double y2, double x3
       a = -a;
    }
    return s > 0 && t > 0 && ( s + t ) < a;
+}
+
+uint32_t sw_GetTicks( void )
+{
+  struct timespec now;
+  clock_gettime( CLOCK_MONOTONIC, &now );
+  return now.tv_sec * 1000 + now.tv_nsec / 1000000;
 }
 
 /*
