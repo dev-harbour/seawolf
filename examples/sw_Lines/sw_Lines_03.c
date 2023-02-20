@@ -26,7 +26,7 @@ int main( void )
          sw_Background( 0x516C4B );
 
          ticks = sw_GetTicks();
-printf( "ticks = %i \n", ticks );
+
          for( i = 0; i < 2 * n; i++ )
          {
             x1 = sin(        i * M_PI / n ) * radius * 2 + x2;
